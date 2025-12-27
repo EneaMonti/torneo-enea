@@ -1,695 +1,677 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.2">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <meta name="apple-mobile-web-app-title" content="Torneo">
+
+  <title>Torneo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon-green: #39ff14;
+      --dark-bg: #050505;
+      --panel-bg: #111111;
+      --border-color: #333;
+      --glow: none;
+      --danger: #ff003c;
+      --active-bg: rgba(57, 255, 20, 0.2);
+    }
+
+    body {
+      font-family: 'Anton', sans-serif;
+      background-color: var(--dark-bg);
+      color: var(--neon-green);
+      margin: 0;
+      /* AGGIORNATO: Padding per evitare che la barra di stato iPhone copra il titolo */
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 1px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--panel-bg);
+      border-left: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* HEADER */
+    header {
+      background: #000;
+      border-bottom: 2px solid var(--neon-green);
+      padding: 15px;
+      padding-top: 20px; /* Un po' più spazio sopra */
+      text-align: center;
+      font-size: 1.6rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* PROGRESS BAR */
+    .progress-container {
+      background: #222;
+      height: 6px;
+      width: 100%;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--neon-green);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* STEPS */
+    .step-page {
+      display: none;
+      padding: 20px;
+      flex-grow: 1;
+      animation: fadeIn 0.5s ease;
+      padding-bottom: 80px; /* Spazio per il bottone in basso */
+    }
+
+    .step-page.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* UI ELEMENTS */
+    h2 {
+      color: white;
+      margin-top: 0;
+      border-bottom: 2px solid var(--neon-green);
+      padding-bottom: 10px;
+      display: inline-block;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    label {
+      display: block;
+      margin-top: 25px;
+      color: #888;
+      text-transform: uppercase;
+      font-size: 1rem;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      padding: 15px;
+      margin-top: 5px;
+      background: #000;
+      border: 2px solid var(--neon-green);
+      color: var(--neon-green);
+      border-radius: 0;
+      box-sizing: border-box;
+      font-size: 18px;
+      font-family: 'Anton', sans-serif;
+      letter-spacing: 1px;
+      -webkit-appearance: none; /* Rimuove stile default iOS */
+    }
+
+    textarea:focus, input:focus {
+      outline: none;
+      border-color: white;
+      background: #0a0a0a;
+    }
+
+    .time-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .time-inputs div {
+      flex: 1;
+    }
+
+    /* BUTTONS */
+    .btn-action {
+      width: 100%;
+      padding: 20px;
+      background-color: #000;
+      color: var(--neon-green);
+      border: 3px solid var(--neon-green);
+      font-size: 22px;
+      text-transform: uppercase;
+      cursor: pointer;
+      position: sticky;
+      bottom: 0;
+      transition: 0.1s;
+      letter-spacing: 2px;
+      z-index: 100;
+      font-family: 'Anton', sans-serif;
+      /* Fix per iPhone X e successivi */
+      padding-bottom: max(20px, env(safe-area-inset-bottom)); 
+    }
+
+    .btn-action:hover {
+      background-color: var(--neon-green);
+      color: black;
+    }
+
+    .btn-red {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-red:hover {
+      background-color: var(--danger);
+      color: white;
+    }
+
+    .btn-small {
+      padding: 8px 12px;
+      font-size: 12px;
+      background: transparent;
+      border: 2px solid var(--danger);
+      color: var(--danger);
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: 'Anton', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    /* CARDS MATCH */
+    .match-card {
+      background: #0a0a0a;
+      border: 2px solid #333;
+      border-left: 6px solid var(--neon-green);
+      padding: 20px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .vs-badge {
+      background: var(--neon-green);
+      color: black;
+      padding: 5px 10px;
+      font-size: 1.1rem;
+      margin: 15px 0;
+      display: inline-block;
+    }
+
+    /* TIMER */
+    #timerDisplay {
+      font-size: 6rem;
+      text-align: center;
+      margin: 40px 0;
+      color: var(--neon-green);
+    }
+
+    .pulse {
+      animation: pulse-opacity 0.8s infinite;
+      color: var(--danger) !important;
+    }
+
+    @keyframes pulse-opacity {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    /* SELEZIONE PUNTEGGIO (PULSANTI) */
+    .score-match-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 15px;
+      border-bottom: 2px solid #222;
+      padding-bottom: 15px;
+    }
+
+    .team-select-btn {
+      flex: 1;
+      padding: 25px 10px;
+      background: #000;
+      border: 3px solid #444;
+      color: #666;
+      cursor: pointer;
+      text-transform: uppercase;
+      font-family: 'Anton', sans-serif;
+      font-size: 1.1rem;
+      transition: all 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+    }
+
+    .team-select-btn small {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .team-select-btn.selected {
+      border-color: var(--neon-green);
+      background: var(--active-bg);
+      color: white;
+    }
+
+    .match-result-status {
+      text-align: center;
+      font-size: 1rem;
+      margin-top: -10px;
+      margin-bottom: 30px;
+      color: #888;
+    }
+
+    .status-win { color: var(--neon-green); }
+    .status-draw { color: white; }
+    .status-none { color: var(--danger); }
+
+    /* CLASSIFICA */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border: 2px solid #333;
+    }
+
+    th {
+      background: #222;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      text-transform: uppercase;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 2px solid #333;
+      color: #ddd;
+      font-size: 1.1rem;
+    }
+
+    tr:nth-child(1) td {
+      color: var(--neon-green);
+      font-size: 1.3em;
+    }
   </style>
 </head>
+
 <body>
-<p class="p1">&lt;html lang="it"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"&gt;</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="apple-mobile-web-app-capable" content="yes"&gt;</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"&gt;</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="apple-mobile-web-app-title" content="Torneo"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Torneo&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;link href="https://fonts.googleapis.com/css2?family=Anton&amp;display=swap" rel="stylesheet"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>:root {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--neon-green: #39ff14;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--dark-bg: #050505;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--panel-bg: #111111;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--border-color: #333;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--glow: none;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--danger: #ff003c;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>--active-bg: rgba(57, 255, 20, 0.2);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: 'Anton', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background-color: var(--dark-bg);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>/* AGGIORNATO: Padding per evitare che la barra di stato iPhone copra il titolo */</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>-webkit-tap-highlight-color: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.app-container {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>max-width: 600px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: var(--panel-bg);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-left: 1px solid var(--border-color);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-right: 1px solid var(--border-color);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>min-height: 100vh;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* HEADER */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>header {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #000;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-bottom: 2px solid var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding-top: 20px; /* Un po' più spazio sopra */</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.6rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* PROGRESS BAR */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.progress-container {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #222;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>height: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.progress-bar {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 0%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>transition: width 0.3s ease;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* STEPS */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.step-page {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex-grow: 1;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>animation: fadeIn 0.5s ease;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding-bottom: 80px; /* Spazio per il bottone in basso */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.step-page.active {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>@keyframes fadeIn {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>from { opacity: 0; transform: translateY(10px); }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>to { opacity: 1; transform: translateY(0); }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* UI ELEMENTS */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>h2 {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-bottom: 2px solid var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding-bottom: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>label {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 25px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #888;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>textarea, input, select {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #000;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 2px solid var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 18px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: 'Anton', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>-webkit-appearance: none; /* Rimuove stile default iOS */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>textarea:focus, input:focus {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-color: white;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #0a0a0a;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.time-inputs {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>gap: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.time-inputs div {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* BUTTONS */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.btn-action {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background-color: #000;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 3px solid var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 22px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>position: sticky;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>bottom: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>transition: 0.1s;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 2px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>z-index: 100;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: 'Anton', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>/* Fix per iPhone X e successivi */</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding-bottom: max(20px, env(safe-area-inset-bottom));<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.btn-action:hover {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background-color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: black;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.btn-red {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-color: var(--danger);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--danger);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.btn-red:hover {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background-color: var(--danger);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.btn-small {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 8px 12px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: transparent;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 2px solid var(--danger);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--danger);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: 'Anton', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* CARDS MATCH */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.match-card {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #0a0a0a;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 2px solid #333;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-left: 6px solid var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.vs-badge {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: black;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 5px 10px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin: 15px 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* TIMER */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>#timerDisplay {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 6rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin: 40px 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.pulse {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>animation: pulse-opacity 0.8s infinite;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--danger) !important;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>@keyframes pulse-opacity {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>0% { opacity: 1; }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>50% { opacity: 0.4; }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>100% { opacity: 1; }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* SELEZIONE PUNTEGGIO (PULSANTI) */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.score-match-container {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>gap: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-bottom: 2px solid #222;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding-bottom: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.team-select-btn {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 25px 10px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #000;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 3px solid #444;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #666;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: 'Anton', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>transition: all 0.1s;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>flex-direction: column;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>min-height: 100px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.team-select-btn small {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.8rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>opacity: 0.7;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.team-select-btn.selected {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: var(--active-bg);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.match-result-status {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: -10px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 30px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #888;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>.status-win { color: var(--neon-green); }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.status-draw { color: white; }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.status-none { color: var(--danger); }</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>/* CLASSIFICA */</p>
-<p class="p1"><span class="Apple-converted-space">    </span>table {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-collapse: collapse;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 2px solid #333;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>th {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #222;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: left;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-transform: uppercase;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>letter-spacing: 1px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>td {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 15px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-bottom: 2px solid #333;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #ddd;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.1rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>tr:nth-child(1) td {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: var(--neon-green);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.3em;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;audio id="audioFischio" src="https://actions.google.com/sounds/v1/sports/referee_whistle.ogg" preload="auto"&gt;&lt;/audio&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="app-container"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;header&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span&gt;Torneo&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn-small" onclick="resetApp()"&gt;RESET&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/header&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="progress-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="progress-bar" id="progressBar"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="step-1" class="step-page active"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;h2&gt;IMPOSTAZIONI&lt;/h2&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label&gt;INSERISCI GIOCATORI&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;textarea id="playerInput" rows="5" placeholder="Enea, Matteo, Luca, ..."&gt;&lt;/textarea&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label&gt;INSERISCI UNITA (Giocatori per squadra)&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;input type="number" id="teamSize" value="2"&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label&gt;Tempo Operazione&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="time-inputs"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;input type="number" id="timeMin" placeholder="MIN" value="5"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;input type="number" id="timeSec" placeholder="SEC" value="00"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="flex-grow:1"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn-action" onclick="goToStep2_Genera()"&gt;[ GENERARE SQUADRE ]&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="step-2" class="step-page"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;h2&gt;2. TABELLONE SFIDE&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;p style="color:#666; font-size:1rem; text-transform:uppercase;"&gt;SQUADRE GENERATE&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div id="matchupsContainer"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="flex-grow:1"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn-action" onclick="goToStep3_Timer()"&gt;[ AVVIA PARTITA ]&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="step-3" class="step-page"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;h2&gt;3. ARENA LIVE&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="text-align:center; margin-top:20px; color:#555; text-transform:uppercase; font-size: 1.2rem;"&gt;MATCH IN CORSO&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div id="timerDisplay"&gt;00:00&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="text-align:center;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="btn-small" style="font-size:14px; padding:10px 20px; border-color:white; color:white;" onclick="togglePause()"&gt;|| Pausa / Riprendi&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="flex-grow:1"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="btnEndMatch" class="btn-action btn-red" onclick="goToStep4_Risultati()" disabled&gt;ATTENDI FINE TEMPO&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="step-4" class="step-page"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;h2&gt;4. REPORT ESITI&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;p style="color:#666; font-size:1rem; text-transform:uppercase;"&gt;TOCCA LA SQUADRA VINCENTE.&lt;br&gt;TOCCA ENTRAMBE PER IL PAREGGIO.&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div id="scoresContainer" style="margin-top: 30px;"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="flex-grow:1"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn-action" onclick="goToStep5_Classifica()"&gt;[ SALVA DATI ]&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="step-5" class="step-page"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;h2&gt;5. CLASSIFICA GLOBALE&lt;/h2&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="overflow-y: auto; max-height: 60vh; border: 2px solid #333;"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;table id="rankingTable"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;th&gt;Rank&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;th&gt;Giocatore&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">              </span>&lt;th&gt;Punteggio&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;tbody&gt;&lt;/tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/table&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div style="flex-grow:1"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button class="btn-action" onclick="nuovaPartitaLoop()"&gt;[ Prossima Partita &amp;#8635; ]&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- DATI ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let playersDB = {};</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let currentTeams = [];</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let matchTimeSeconds = 0;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let timerInterval = null;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>let isPaused = false;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- NAVIGAZIONE STEPS ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function showStep(stepNumber) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.querySelectorAll('.step-page').forEach(el =&gt; el.classList.remove('active'));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById(`step-${stepNumber}`).classList.add('active');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('progressBar').style.width = (stepNumber * 20) + "%";</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- STEP 1 -&gt; 2: LOGICA GENERAZIONE SQUADRE ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function goToStep2_Genera() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const input = document.getElementById('playerInput').value;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const size = parseInt(document.getElementById('teamSize').value);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>let names = input.split(/[\n,]+/).map(n =&gt; n.trim()).filter(n =&gt; n.length &gt; 0);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (names.length &lt; 2) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>alert("ERRORE: Inserisci almeno 2 giocatori.");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>names.forEach(n =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>names = names.sort(() =&gt; Math.random() - 0.5);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>currentTeams = [];</p>
-<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; names.length; i += size) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>currentTeams.push(names.slice(i, i + size));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// UNISCI GIOCATORE RIMASTO SOLO</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (currentTeams.length &gt; 1) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const lastTeamIndex = currentTeams.length - 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (currentTeams[lastTeamIndex].length === 1) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const lonePlayer = currentTeams[lastTeamIndex][0];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>currentTeams.pop();</p>
-<p class="p1"><span class="Apple-converted-space">          </span>currentTeams[currentTeams.length - 1].push(lonePlayer);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>renderMatchups();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>showStep(2);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function renderMatchups() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const div = document.getElementById('matchupsContainer');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>div.innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; currentTeams.length; i += 2) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t1 = currentTeams[i];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t2 = currentTeams[i + 1];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const card = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>card.className = 'match-card';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (t2) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>card.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color:white; font-size:1.3em;"&gt;${t1.join(' + ')}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="vs-badge"&gt;VS&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color:var(--danger); font-size:1.3em;"&gt;${t2.join(' + ')}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>card.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="color:#888; font-size:1.2em;"&gt;${t1.join(' + ')}&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span class="vs-badge" style="background:#444; color:#aaa"&gt;IN ATTESA (RIPOSO)&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>div.appendChild(card);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- STEP 2 -&gt; 3: TIMER ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function goToStep3_Timer() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const min = parseInt(document.getElementById('timeMin').value) || 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const sec = parseInt(document.getElementById('timeSec').value) || 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>matchTimeSeconds = (min * 60) + sec;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (matchTimeSeconds === 0) matchTimeSeconds = 300;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>renderTimer(matchTimeSeconds);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('timerDisplay').classList.remove('pulse');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('btnEndMatch').disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('btnEndMatch').innerText = "PARTITA IN CORSO...";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('btnEndMatch').style.opacity = "0.5";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('btnEndMatch').classList.remove('btn-red');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>suonaFischio();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>startTimer();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>showStep(3);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function startTimer() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>clearInterval(timerInterval);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>isPaused = false;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>timerInterval = setInterval(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!isPaused) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>matchTimeSeconds--;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>renderTimer(matchTimeSeconds);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (matchTimeSeconds &lt;= 10) document.getElementById('timerDisplay').classList.add('pulse');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (matchTimeSeconds &lt;= 0) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>clearInterval(timerInterval);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>suonaFischio();</p>
-<p class="p1"><span class="Apple-converted-space">            </span>timerEndedUI();</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, 1000);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function togglePause() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>isPaused = !isPaused;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function timerEndedUI() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('timerDisplay').innerText = "00:00";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const btn = document.getElementById('btnEndMatch');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>btn.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>btn.style.opacity = "1";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>btn.classList.add('btn-red');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>btn.innerText = "FISCHIO FINALE [ VAI AI RISULTATI ]";</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function renderTimer(s) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const m = Math.floor(s / 60).toString().padStart(2, '0');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const sec = (s % 60).toString().padStart(2, '0');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('timerDisplay').innerText = `${m}:${sec}`;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- STEP 3 -&gt; 4: INTERFACCIA RISULTATI (PULSANTI) ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function goToStep4_Risultati() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const div = document.getElementById('scoresContainer');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>div.innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; currentTeams.length; i += 2) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t1 = currentTeams[i];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t2 = currentTeams[i + 1];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const matchId = i;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (t2) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const container = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>// Nomi formattati per i pulsanti</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const name1 = t1.length &gt; 2 ? `TEAM A&lt;br&gt;&lt;small&gt;${t1[0]}...&lt;/small&gt;` : t1.join('&lt;br&gt;');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const name2 = t2.length &gt; 2 ? `TEAM B&lt;br&gt;&lt;small&gt;${t2[0]}...&lt;/small&gt;` : t2.join('&lt;br&gt;');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>container.innerHTML = `</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div style="text-align:center; font-size:1rem; color:#666; margin-bottom:10px;"&gt;MATCH ${i/2 + 1}&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="score-match-container"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button class="team-select-btn" id="btn-m${matchId}-t0" onclick="toggleSelection(${matchId}, 0)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${name1}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                        </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div style="font-size: 1.5rem; color:#444;"&gt;VS&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                        </span></p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;button class="team-select-btn" id="btn-m${matchId}-t1" onclick="toggleSelection(${matchId}, 1)"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                            </span>${name2}</p>
-<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">                    </span></p>
-<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div id="status-m${matchId}" class="match-result-status status-none"&gt;SELEZIONA ESITO&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">                </span>`;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>div.appendChild(container);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>showStep(4);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function toggleSelection(matchId, teamIndex) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const btn = document.getElementById(`btn-m${matchId}-t${teamIndex}`);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>btn.classList.toggle('selected');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>updateMatchStatus(matchId);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function updateMatchStatus(matchId) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const btn0 = document.getElementById(`btn-m${matchId}-t0`);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const btn1 = document.getElementById(`btn-m${matchId}-t1`);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const statusDiv = document.getElementById(`status-m${matchId}`);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const sel0 = btn0.classList.contains('selected');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const sel1 = btn1.classList.contains('selected');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (sel0 &amp;&amp; sel1) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.innerText = "PAREGGIO (2 Punti)";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.className = "match-result-status status-draw";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} else if (sel0) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.innerText = "VINCITORE: SQUADRA SX (3 Punti)";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.className = "match-result-status status-win";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} else if (sel1) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.innerText = "VINCITORE: SQUADRA DX (3 Punti)";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.className = "match-result-status status-win";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.innerText = "SELEZIONA ESITO";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusDiv.className = "match-result-status status-none";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- STEP 4 -&gt; 5: CALCOLO PUNTI ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function goToStep5_Classifica() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; currentTeams.length; i += 2) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t1 = currentTeams[i];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const t2 = currentTeams[i + 1];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (t2) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const btn0 = document.getElementById(`btn-m${i}-t0`);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const btn1 = document.getElementById(`btn-m${i}-t1`);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const win0 = btn0.classList.contains('selected');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const win1 = btn1.classList.contains('selected');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>let pts0 = 0;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>let pts1 = 0;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (win0 &amp;&amp; win1) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts0 = 2;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts1 = 2;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else if (win0) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts0 = 3;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts1 = 1;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else if (win1) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts0 = 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>pts1 = 3;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>t1.forEach(p =&gt; playersDB[p] += pts0);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>t2.forEach(p =&gt; playersDB[p] += pts1);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>renderRanking();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>showStep(5);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function renderRanking() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const tbody = document.querySelector('#rankingTable tbody');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>tbody.innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const sorted = Object.keys(playersDB)</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.map(name =&gt; ({</p>
-<p class="p1"><span class="Apple-converted-space">          </span>n: name,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>p: playersDB[name]</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}))</p>
-<p class="p1"><span class="Apple-converted-space">        </span>.sort((a, b) =&gt; b.p - a.p);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>sorted.forEach((item, idx) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const tr = document.createElement('tr');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let medal = "";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (idx === 0) medal = "🥇";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (idx === 1) medal = "🥈";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (idx === 2) medal = "🥉";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>tr.innerHTML = `&lt;td&gt;${idx+1} ${medal}&lt;/td&gt;&lt;td&gt;${item.n}&lt;/td&gt;&lt;td&gt;${item.p}&lt;/td&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>tbody.appendChild(tr);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function nuovaPartitaLoop() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>goToStep2_Genera();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function suonaFischio() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const audio = document.getElementById('audioFischio');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>audio.currentTime = 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>audio.play().catch(e =&gt; console.warn("Audio bloccato"));</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// --- NUOVA FUNZIONE RESET MANUALE ---</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function resetApp() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (confirm("Vuoi azzerare il torneo e tornare all'inizio?")) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 1. Reset variabili</p>
-<p class="p1"><span class="Apple-converted-space">        </span>playersDB = {};</p>
-<p class="p1"><span class="Apple-converted-space">        </span>currentTeams = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>matchTimeSeconds = 0;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>clearInterval(timerInterval);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>isPaused = false;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 2. Pulisci Contenitori</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('matchupsContainer').innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('scoresContainer').innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.querySelector('#rankingTable tbody').innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 3. Reset Timer UI</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('timerDisplay').innerText = "00:00";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('timerDisplay').classList.remove('pulse');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const btnEnd = document.getElementById('btnEndMatch');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>btnEnd.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>btnEnd.innerText = "ATTENDI FINE TEMPO";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>btnEnd.classList.remove('btn-red');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>btnEnd.style.opacity = "0.5";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// 4. Torna alla pagina 1</p>
-<p class="p1"><span class="Apple-converted-space">        </span>showStep(1);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/html&gt;</p>
+
+  <audio id="audioFischio" src="https://actions.google.com/sounds/v1/sports/referee_whistle.ogg" preload="auto"></audio>
+
+  <div class="app-container">
+
+    <header>
+      <span>Torneo</span>
+      <button class="btn-small" onclick="resetApp()">RESET</button>
+    </header>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="step-1" class="step-page active">
+      <h2>IMPOSTAZIONI</h2>
+
+      <label>INSERISCI GIOCATORI</label>
+      <textarea id="playerInput" rows="5" placeholder="Enea, Matteo, Luca, ..."></textarea>
+
+      <label>INSERISCI UNITA (Giocatori per squadra)</label>
+      <input type="number" id="teamSize" value="2">
+
+      <label>Tempo Operazione</label>
+      <div class="time-inputs">
+        <input type="number" id="timeMin" placeholder="MIN" value="5">
+        <input type="number" id="timeSec" placeholder="SEC" value="00">
+      </div>
+
+      <div style="flex-grow:1"></div>
+      <button class="btn-action" onclick="goToStep2_Genera()">[ GENERARE SQUADRE ]</button>
+    </div>
+
+    <div id="step-2" class="step-page">
+      <h2>2. TABELLONE SFIDE</h2>
+      <p style="color:#666; font-size:1rem; text-transform:uppercase;">SQUADRE GENERATE</p>
+
+      <div id="matchupsContainer"></div>
+
+      <div style="flex-grow:1"></div>
+      <button class="btn-action" onclick="goToStep3_Timer()">[ AVVIA PARTITA ]</button>
+    </div>
+
+    <div id="step-3" class="step-page">
+      <h2>3. ARENA LIVE</h2>
+      <div style="text-align:center; margin-top:20px; color:#555; text-transform:uppercase; font-size: 1.2rem;">MATCH IN CORSO</div>
+
+      <div id="timerDisplay">00:00</div>
+
+      <div style="text-align:center;">
+        <button class="btn-small" style="font-size:14px; padding:10px 20px; border-color:white; color:white;" onclick="togglePause()">|| Pausa / Riprendi</button>
+      </div>
+
+      <div style="flex-grow:1"></div>
+      <button id="btnEndMatch" class="btn-action btn-red" onclick="goToStep4_Risultati()" disabled>ATTENDI FINE TEMPO</button>
+    </div>
+
+    <div id="step-4" class="step-page">
+      <h2>4. REPORT ESITI</h2>
+      <p style="color:#666; font-size:1rem; text-transform:uppercase;">TOCCA LA SQUADRA VINCENTE.<br>TOCCA ENTRAMBE PER IL PAREGGIO.</p>
+
+      <div id="scoresContainer" style="margin-top: 30px;"></div>
+
+      <div style="flex-grow:1"></div>
+      <button class="btn-action" onclick="goToStep5_Classifica()">[ SALVA DATI ]</button>
+    </div>
+
+    <div id="step-5" class="step-page">
+      <h2>5. CLASSIFICA GLOBALE</h2>
+
+      <div style="overflow-y: auto; max-height: 60vh; border: 2px solid #333;">
+        <table id="rankingTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Giocatore</th>
+              <th>Punteggio</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div style="flex-grow:1"></div>
+      <button class="btn-action" onclick="nuovaPartitaLoop()">[ Prossima Partita &#8635; ]</button>
+    </div>
+
+  </div>
+
+  <script>
+    // --- DATI ---
+    let playersDB = {};
+    let currentTeams = [];
+    let matchTimeSeconds = 0;
+    let timerInterval = null;
+    let isPaused = false;
+    // --- NAVIGAZIONE STEPS ---
+    function showStep(stepNumber) {
+      document.querySelectorAll('.step-page').forEach(el => el.classList.remove('active'));
+      document.getElementById(`step-${stepNumber}`).classList.add('active');
+      document.getElementById('progressBar').style.width = (stepNumber * 20) + "%";
+    }
+    // --- STEP 1 -> 2: LOGICA GENERAZIONE SQUADRE ---
+    function goToStep2_Genera() {
+      const input = document.getElementById('playerInput').value;
+      const size = parseInt(document.getElementById('teamSize').value);
+      let names = input.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+      if (names.length < 2) {
+        alert("ERRORE: Inserisci almeno 2 giocatori.");
+        return;
+      }
+      names.forEach(n => {
+        if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;
+      });
+      names = names.sort(() => Math.random() - 0.5);
+      currentTeams = [];
+      for (let i = 0; i < names.length; i += size) {
+        currentTeams.push(names.slice(i, i + size));
+      }
+      // UNISCI GIOCATORE RIMASTO SOLO
+      if (currentTeams.length > 1) {
+        const lastTeamIndex = currentTeams.length - 1;
+        if (currentTeams[lastTeamIndex].length === 1) {
+          const lonePlayer = currentTeams[lastTeamIndex][0];
+          currentTeams.pop();
+          currentTeams[currentTeams.length - 1].push(lonePlayer);
+        }
+      }
+      renderMatchups();
+      showStep(2);
+    }
+
+    function renderMatchups() {
+      const div = document.getElementById('matchupsContainer');
+      div.innerHTML = '';
+      for (let i = 0; i < currentTeams.length; i += 2) {
+        const t1 = currentTeams[i];
+        const t2 = currentTeams[i + 1];
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        if (t2) {
+          card.innerHTML = `
+                    <div style="color:white; font-size:1.3em;">${t1.join(' + ')}</div>
+                    <span class="vs-badge">VS</span>
+                    <div style="color:var(--danger); font-size:1.3em;">${t2.join(' + ')}</div>
+                `;
+        } else {
+          card.innerHTML = `
+                    <div style="color:#888; font-size:1.2em;">${t1.join(' + ')}</div>
+                    <span class="vs-badge" style="background:#444; color:#aaa">IN ATTESA (RIPOSO)</span>
+                `;
+        }
+        div.appendChild(card);
+      }
+    }
+    // --- STEP 2 -> 3: TIMER ---
+    function goToStep3_Timer() {
+      const min = parseInt(document.getElementById('timeMin').value) || 0;
+      const sec = parseInt(document.getElementById('timeSec').value) || 0;
+      matchTimeSeconds = (min * 60) + sec;
+      if (matchTimeSeconds === 0) matchTimeSeconds = 300;
+      renderTimer(matchTimeSeconds);
+      document.getElementById('timerDisplay').classList.remove('pulse');
+      document.getElementById('btnEndMatch').disabled = true;
+      document.getElementById('btnEndMatch').innerText = "PARTITA IN CORSO...";
+      document.getElementById('btnEndMatch').style.opacity = "0.5";
+      document.getElementById('btnEndMatch').classList.remove('btn-red');
+      suonaFischio();
+      startTimer();
+      showStep(3);
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      isPaused = false;
+      timerInterval = setInterval(() => {
+        if (!isPaused) {
+          matchTimeSeconds--;
+          renderTimer(matchTimeSeconds);
+          if (matchTimeSeconds <= 10) document.getElementById('timerDisplay').classList.add('pulse');
+          if (matchTimeSeconds <= 0) {
+            clearInterval(timerInterval);
+            suonaFischio();
+            timerEndedUI();
+          }
+        }
+      }, 1000);
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+    }
+
+    function timerEndedUI() {
+      document.getElementById('timerDisplay').innerText = "00:00";
+      const btn = document.getElementById('btnEndMatch');
+      btn.disabled = false;
+      btn.style.opacity = "1";
+      btn.classList.add('btn-red');
+      btn.innerText = "FISCHIO FINALE [ VAI AI RISULTATI ]";
+    }
+
+    function renderTimer(s) {
+      const m = Math.floor(s / 60).toString().padStart(2, '0');
+      const sec = (s % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').innerText = `${m}:${sec}`;
+    }
+    // --- STEP 3 -> 4: INTERFACCIA RISULTATI (PULSANTI) ---
+    function goToStep4_Risultati() {
+      const div = document.getElementById('scoresContainer');
+      div.innerHTML = '';
+      for (let i = 0; i < currentTeams.length; i += 2) {
+        const t1 = currentTeams[i];
+        const t2 = currentTeams[i + 1];
+        const matchId = i;
+        if (t2) {
+          const container = document.createElement('div');
+          // Nomi formattati per i pulsanti
+          const name1 = t1.length > 2 ? `TEAM A<br><small>${t1[0]}...</small>` : t1.join('<br>');
+          const name2 = t2.length > 2 ? `TEAM B<br><small>${t2[0]}...</small>` : t2.join('<br>');
+          container.innerHTML = `
+                    <div style="text-align:center; font-size:1rem; color:#666; margin-bottom:10px;">MATCH ${i/2 + 1}</div>
+                    
+                    <div class="score-match-container">
+                        <button class="team-select-btn" id="btn-m${matchId}-t0" onclick="toggleSelection(${matchId}, 0)">
+                            ${name1}
+                        </button>
+                        
+                        <div style="font-size: 1.5rem; color:#444;">VS</div>
+                        
+                        <button class="team-select-btn" id="btn-m${matchId}-t1" onclick="toggleSelection(${matchId}, 1)">
+                            ${name2}
+                        </button>
+                    </div>
+                    
+                    <div id="status-m${matchId}" class="match-result-status status-none">SELEZIONA ESITO</div>
+                `;
+          div.appendChild(container);
+        }
+      }
+      showStep(4);
+    }
+
+    function toggleSelection(matchId, teamIndex) {
+      const btn = document.getElementById(`btn-m${matchId}-t${teamIndex}`);
+      btn.classList.toggle('selected');
+      updateMatchStatus(matchId);
+    }
+
+    function updateMatchStatus(matchId) {
+      const btn0 = document.getElementById(`btn-m${matchId}-t0`);
+      const btn1 = document.getElementById(`btn-m${matchId}-t1`);
+      const statusDiv = document.getElementById(`status-m${matchId}`);
+      const sel0 = btn0.classList.contains('selected');
+      const sel1 = btn1.classList.contains('selected');
+      if (sel0 && sel1) {
+        statusDiv.innerText = "PAREGGIO (2 Punti)";
+        statusDiv.className = "match-result-status status-draw";
+      } else if (sel0) {
+        statusDiv.innerText = "VINCITORE: SQUADRA SX (3 Punti)";
+        statusDiv.className = "match-result-status status-win";
+      } else if (sel1) {
+        statusDiv.innerText = "VINCITORE: SQUADRA DX (3 Punti)";
+        statusDiv.className = "match-result-status status-win";
+      } else {
+        statusDiv.innerText = "SELEZIONA ESITO";
+        statusDiv.className = "match-result-status status-none";
+      }
+    }
+    // --- STEP 4 -> 5: CALCOLO PUNTI ---
+    function goToStep5_Classifica() {
+      for (let i = 0; i < currentTeams.length; i += 2) {
+        const t1 = currentTeams[i];
+        const t2 = currentTeams[i + 1];
+        if (t2) {
+          const btn0 = document.getElementById(`btn-m${i}-t0`);
+          const btn1 = document.getElementById(`btn-m${i}-t1`);
+          const win0 = btn0.classList.contains('selected');
+          const win1 = btn1.classList.contains('selected');
+          let pts0 = 0;
+          let pts1 = 0;
+          if (win0 && win1) {
+            pts0 = 2;
+            pts1 = 2;
+          } else if (win0) {
+            pts0 = 3;
+            pts1 = 1;
+          } else if (win1) {
+            pts0 = 1;
+            pts1 = 3;
+          }
+          t1.forEach(p => playersDB[p] += pts0);
+          t2.forEach(p => playersDB[p] += pts1);
+        }
+      }
+      renderRanking();
+      showStep(5);
+    }
+
+    function renderRanking() {
+      const tbody = document.querySelector('#rankingTable tbody');
+      tbody.innerHTML = '';
+      const sorted = Object.keys(playersDB)
+        .map(name => ({
+          n: name,
+          p: playersDB[name]
+        }))
+        .sort((a, b) => b.p - a.p);
+      sorted.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        let medal = "";
+        if (idx === 0) medal = "🥇";
+        if (idx === 1) medal = "🥈";
+        if (idx === 2) medal = "🥉";
+        tr.innerHTML = `<td>${idx+1} ${medal}</td><td>${item.n}</td><td>${item.p}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function nuovaPartitaLoop() {
+      goToStep2_Genera();
+    }
+
+    function suonaFischio() {
+      const audio = document.getElementById('audioFischio');
+      audio.currentTime = 0;
+      audio.play().catch(e => console.warn("Audio bloccato"));
+    }
+    // --- NUOVA FUNZIONE RESET MANUALE ---
+    function resetApp() {
+      if (confirm("Vuoi azzerare il torneo e tornare all'inizio?")) {
+        // 1. Reset variabili
+        playersDB = {};
+        currentTeams = [];
+        matchTimeSeconds = 0;
+        clearInterval(timerInterval);
+        isPaused = false;
+        // 2. Pulisci Contenitori
+        document.getElementById('matchupsContainer').innerHTML = '';
+        document.getElementById('scoresContainer').innerHTML = '';
+        document.querySelector('#rankingTable tbody').innerHTML = '';
+        // 3. Reset Timer UI
+        document.getElementById('timerDisplay').innerText = "00:00";
+        document.getElementById('timerDisplay').classList.remove('pulse');
+        const btnEnd = document.getElementById('btnEndMatch');
+        btnEnd.disabled = true;
+        btnEnd.innerText = "ATTENDI FINE TEMPO";
+        btnEnd.classList.remove('btn-red');
+        btnEnd.style.opacity = "0.5";
+        // 4. Torna alla pagina 1
+        showStep(1);
+      }
+    }
+  </script>
+
 </body>
+
 </html>
