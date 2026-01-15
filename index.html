@@ -1,19 +1,17 @@
+<!DOCTYPE html>
 <html lang="it">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
-  
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>Torneo Enea</title>
   
-  <meta name="apple-mobile-web-app-title" content="Torneo">
-
-  <title>Torneo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -21,24 +19,25 @@
       --dark-bg: #050505;
       --panel-bg: #111111;
       --border-color: #333;
-      --glow: none;
       --danger: #ff003c;
       --active-bg: rgba(57, 255, 20, 0.2);
+      --blue: #2196F3;
     }
 
+    * { box-sizing: border-box; user-select: none; }
+
     body {
-      font-family: 'Anton', sans-serif;
+      font-family: 'Roboto', sans-serif;
       background-color: var(--dark-bg);
       color: var(--neon-green);
       margin: 0;
-      /* AGGIORNATO: Padding per evitare che la barra di stato iPhone copra il titolo */
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
       display: flex;
       justify-content: center;
       min-height: 100vh;
-      -webkit-tap-highlight-color: transparent;
-      letter-spacing: 1px;
     }
+
+    h1, h2, h3, .anton-font { font-family: 'Anton', sans-serif; letter-spacing: 1px; }
 
     .app-container {
       width: 100%;
@@ -57,623 +56,845 @@
       background: #000;
       border-bottom: 2px solid var(--neon-green);
       padding: 15px;
-      padding-top: 20px; /* Un po' più spazio sopra */
-      text-align: center;
-      font-size: 1.6rem;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+      padding-top: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+    
+    .logo { font-size: 1.5rem; text-transform: uppercase; color: white; }
 
     /* PROGRESS BAR */
-    .progress-container {
-      background: #222;
-      height: 6px;
-      width: 100%;
-    }
+    .progress-container { background: #222; height: 4px; width: 100%; }
+    .progress-bar { height: 100%; background: var(--neon-green); width: 0%; transition: width 0.3s ease; }
 
-    .progress-bar {
-      height: 100%;
-      background: var(--neon-green);
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    /* STEPS */
+    /* PAGES */
     .step-page {
       display: none;
       padding: 20px;
       flex-grow: 1;
-      animation: fadeIn 0.5s ease;
-      padding-bottom: 80px; /* Spazio per il bottone in basso */
+      flex-direction: column;
+      animation: fadeIn 0.4s ease;
+      padding-bottom: 100px; /* Spazio per bottone sticky */
     }
 
-    .step-page.active {
-      display: flex;
-      flex-direction: column;
-    }
+    .step-page.active { display: flex; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* UI ELEMENTS */
-    h2 {
-      color: white;
-      margin-top: 0;
-      border-bottom: 2px solid var(--neon-green);
-      padding-bottom: 10px;
-      display: inline-block;
-      font-size: 1.5rem;
-      text-transform: uppercase;
-    }
-
-    label {
-      display: block;
-      margin-top: 25px;
-      color: #888;
-      text-transform: uppercase;
-      font-size: 1rem;
-    }
-
+    /* FORMS */
+    label { display: block; margin-top: 20px; color: #888; text-transform: uppercase; font-size: 0.9rem; font-weight: bold; }
+    
     textarea, input, select {
       width: 100%;
       padding: 15px;
-      margin-top: 5px;
+      margin-top: 8px;
       background: #000;
-      border: 2px solid var(--neon-green);
-      color: var(--neon-green);
-      border-radius: 0;
-      box-sizing: border-box;
-      font-size: 18px;
-      font-family: 'Anton', sans-serif;
-      letter-spacing: 1px;
-      -webkit-appearance: none; /* Rimuove stile default iOS */
+      border: 1px solid #444;
+      color: white;
+      font-size: 1.1rem;
+      font-family: 'Roboto', sans-serif;
+      border-radius: 4px;
     }
 
-    textarea:focus, input:focus {
-      outline: none;
-      border-color: white;
-      background: #0a0a0a;
+    /* UPPERCASE VISIVO */
+    textarea#playerInput {
+        text-transform: uppercase;
     }
+    
+    textarea:focus, input:focus { outline: none; border-color: var(--neon-green); }
 
-    .time-inputs {
-      display: flex;
-      gap: 10px;
+    .time-inputs { display: flex; gap: 10px; }
+    .time-inputs div { flex: 1; }
+
+    /* COUNTER & WARNING */
+    .input-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
     }
-
-    .time-inputs div {
-      flex: 1;
+    .player-counter {
+        color: var(--neon-green);
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+    .warning-box {
+        display: none;
+        background: rgba(255, 0, 60, 0.1);
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        animation: pulse-border 1.5s infinite;
+    }
+    @keyframes pulse-border {
+        0% { border-color: var(--danger); }
+        50% { border-color: transparent; }
+        100% { border-color: var(--danger); }
     }
 
     /* BUTTONS */
     .btn-action {
       width: 100%;
       padding: 20px;
-      background-color: #000;
-      color: var(--neon-green);
-      border: 3px solid var(--neon-green);
-      font-size: 22px;
+      background-color: var(--neon-green);
+      color: black;
+      border: none;
+      font-size: 1.4rem;
       text-transform: uppercase;
+      font-family: 'Anton', sans-serif;
       cursor: pointer;
       position: sticky;
       bottom: 0;
-      transition: 0.1s;
-      letter-spacing: 2px;
-      z-index: 100;
-      font-family: 'Anton', sans-serif;
-      /* Fix per iPhone X e successivi */
-      padding-bottom: max(20px, env(safe-area-inset-bottom)); 
+      margin-top: auto; 
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+      transition: all 0.2s;
     }
 
-    .btn-action:hover {
-      background-color: var(--neon-green);
-      color: black;
-    }
+    .btn-action:active { filter: brightness(0.8); }
+    .btn-action:disabled { background-color: #333; color: #666; cursor: not-allowed; }
 
-    .btn-red {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
-
-    .btn-red:hover {
-      background-color: var(--danger);
-      color: white;
-    }
-
+    .btn-red { background-color: var(--danger); color: white; }
+    
     .btn-small {
-      padding: 8px 12px;
-      font-size: 12px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
       background: transparent;
-      border: 2px solid var(--danger);
+      border: 1px solid var(--danger);
       color: var(--danger);
-      cursor: pointer;
+      border-radius: 4px;
       text-transform: uppercase;
-      font-family: 'Anton', sans-serif;
-      letter-spacing: 1px;
+      cursor: pointer;
+    }
+    
+    .btn-blue {
+        border-color: var(--blue);
+        color: var(--blue);
     }
 
-    /* CARDS MATCH */
+    /* MATCH CARDS */
     .match-card {
-      background: #0a0a0a;
-      border: 2px solid #333;
-      border-left: 6px solid var(--neon-green);
-      padding: 20px;
-      margin-bottom: 15px;
+      background: #1a1a1a;
+      border-left: 4px solid var(--neon-green);
+      padding: 15px;
+      margin-bottom: 10px;
       text-align: center;
+      border-radius: 0 4px 4px 0;
     }
-
-    .vs-badge {
-      background: var(--neon-green);
-      color: black;
-      padding: 5px 10px;
-      font-size: 1.1rem;
-      margin: 15px 0;
-      display: inline-block;
+    
+    .vs-badge { 
+      background: #333; color: var(--neon-green); 
+      padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; margin: 5px 0; display: inline-block;
     }
 
     /* TIMER */
     #timerDisplay {
       font-size: 6rem;
       text-align: center;
-      margin: 40px 0;
-      color: var(--neon-green);
+      margin: 30px 0;
+      font-family: 'Anton', sans-serif;
+      color: white;
+      text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+    }
+    
+    .timer-paused { color: #555 !important; text-shadow: none !important; }
+    .pulse { animation: pulse-red 1s infinite; color: var(--danger) !important; }
+
+    @keyframes pulse-red {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
 
-    .pulse {
-      animation: pulse-opacity 0.8s infinite;
-      color: var(--danger) !important;
-    }
-
-    @keyframes pulse-opacity {
-      0% { opacity: 1; }
-      50% { opacity: 0.4; }
-      100% { opacity: 1; }
-    }
-
-    /* SELEZIONE PUNTEGGIO (PULSANTI) */
-    .score-match-container {
+    /* SCORE SELECTION */
+    .score-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      gap: 15px;
-      border-bottom: 2px solid #222;
-      padding-bottom: 15px;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 20px;
     }
 
-    .team-select-btn {
+    .team-btn {
       flex: 1;
-      padding: 25px 10px;
-      background: #000;
-      border: 3px solid #444;
-      color: #666;
+      background: #1a1a1a;
+      border: 2px solid #333;
+      color: #aaa;
+      padding: 15px 5px;
+      border-radius: 8px;
       cursor: pointer;
-      text-transform: uppercase;
-      font-family: 'Anton', sans-serif;
-      font-size: 1.1rem;
-      transition: all 0.1s;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100px;
+      transition: 0.2s;
     }
 
-    .team-select-btn small {
-      font-size: 0.8rem;
-      opacity: 0.7;
-      margin-top: 5px;
-    }
-
-    .team-select-btn.selected {
+    .team-btn.selected {
       border-color: var(--neon-green);
       background: var(--active-bg);
       color: white;
     }
+    
+    .team-names { font-size: 0.9rem; font-weight: bold; line-height: 1.4; }
+    .result-label { margin-top: 5px; font-size: 0.7rem; text-transform: uppercase; }
 
-    .match-result-status {
-      text-align: center;
-      font-size: 1rem;
-      margin-top: -10px;
-      margin-bottom: 30px;
-      color: #888;
+    /* RANKING TABLE */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { text-align: left; color: #666; padding: 10px; border-bottom: 1px solid #333; font-size: 0.8rem; text-transform: uppercase;}
+    td { padding: 12px 5px; border-bottom: 1px solid #222; font-size: 1.1rem; color: white;}
+    tr:first-child td { color: var(--neon-green); font-size: 1.3rem; font-weight: bold; }
+    
+    .manual-score-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
     }
 
-    .status-win { color: var(--neon-green); }
-    .status-draw { color: white; }
-    .status-none { color: var(--danger); }
+    .btn-adj {
+        background: #222;
+        border: 1px solid #444;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+    }
+    .btn-adj:active { background: #444; }
+    .btn-adj.minus { color: var(--danger); border-color: var(--danger); }
+    .btn-adj.plus { color: var(--neon-green); border-color: var(--neon-green); }
 
-    /* CLASSIFICA */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      border: 2px solid #333;
+    /* MODAL LIVE RANKING */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.95);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 20px;
+    }
+    
+    .modal-overlay.active-modal { display: flex; }
+
+    .modal-content {
+        background: #111;
+        border: 2px solid var(--neon-green);
+        width: 100%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
     }
 
-    th {
-      background: #222;
-      color: white;
-      padding: 15px;
-      text-align: left;
-      text-transform: uppercase;
-      font-size: 1rem;
-      letter-spacing: 1px;
+    .close-modal-btn {
+        margin-top: 20px;
+        padding: 15px 40px;
+        background: white;
+        color: black;
+        border: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-family: 'Anton', sans-serif;
+        font-size: 1.2rem;
+        cursor: pointer;
     }
 
-    td {
-      padding: 15px;
-      border-bottom: 2px solid #333;
-      color: #ddd;
-      font-size: 1.1rem;
-    }
-
-    tr:nth-child(1) td {
-      color: var(--neon-green);
-      font-size: 1.3em;
-    }
   </style>
 </head>
-
 <body>
 
-  <audio id="audioFischio" src="https://actions.google.com/sounds/v1/sports/referee_whistle.ogg" preload="auto"></audio>
+<audio id="whistleSound" src="https://actions.google.com/sounds/v1/sports/referee_whistle.ogg" preload="auto"></audio>
 
-  <div class="app-container">
-
-    <header>
-      <span>Torneo</span>
-      <button class="btn-small" onclick="resetApp()">RESET</button>
-    </header>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-
-    <div id="step-1" class="step-page active">
-      <h2>IMPOSTAZIONI</h2>
-
-      <label>INSERISCI GIOCATORI</label>
-      <textarea id="playerInput" rows="5" placeholder="Enea, Matteo, Luca, ..."></textarea>
-
-      <label>INSERISCI UNITA (Giocatori per squadra)</label>
-      <input type="number" id="teamSize" value="2">
-
-      <label>Tempo Operazione</label>
-      <div class="time-inputs">
-        <input type="number" id="timeMin" placeholder="MIN" value="5">
-        <input type="number" id="timeSec" placeholder="SEC" value="00">
-      </div>
-
-      <div style="flex-grow:1"></div>
-      <button class="btn-action" onclick="goToStep2_Genera()">[ GENERARE SQUADRE ]</button>
-    </div>
-
-    <div id="step-2" class="step-page">
-      <h2>2. TABELLONE SFIDE</h2>
-      <p style="color:#666; font-size:1rem; text-transform:uppercase;">SQUADRE GENERATE</p>
-
-      <div id="matchupsContainer"></div>
-
-      <div style="flex-grow:1"></div>
-      <button class="btn-action" onclick="goToStep3_Timer()">[ AVVIA PARTITA ]</button>
-    </div>
-
-    <div id="step-3" class="step-page">
-      <h2>3. ARENA LIVE</h2>
-      <div style="text-align:center; margin-top:20px; color:#555; text-transform:uppercase; font-size: 1.2rem;">MATCH IN CORSO</div>
-
-      <div id="timerDisplay">00:00</div>
-
-      <div style="text-align:center;">
-        <button class="btn-small" style="font-size:14px; padding:10px 20px; border-color:white; color:white;" onclick="togglePause()">|| Pausa / Riprendi</button>
-      </div>
-
-      <div style="flex-grow:1"></div>
-      <button id="btnEndMatch" class="btn-action btn-red" onclick="goToStep4_Risultati()" disabled>ATTENDI FINE TEMPO</button>
-    </div>
-
-    <div id="step-4" class="step-page">
-      <h2>4. REPORT ESITI</h2>
-      <p style="color:#666; font-size:1rem; text-transform:uppercase;">TOCCA LA SQUADRA VINCENTE.<br>TOCCA ENTRAMBE PER IL PAREGGIO.</p>
-
-      <div id="scoresContainer" style="margin-top: 30px;"></div>
-
-      <div style="flex-grow:1"></div>
-      <button class="btn-action" onclick="goToStep5_Classifica()">[ SALVA DATI ]</button>
-    </div>
-
-    <div id="step-5" class="step-page">
-      <h2>5. CLASSIFICA GLOBALE</h2>
-
-      <div style="overflow-y: auto; max-height: 60vh; border: 2px solid #333;">
-        <table id="rankingTable">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Giocatore</th>
-              <th>Punteggio</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
+<div id="liveRankingModal" class="modal-overlay">
+    <h2 class="anton-font" style="color: white; margin-bottom: 10px;">CLASSIFICA PARZIALE</h2>
+    <div class="modal-content">
+        <table id="liveRankingTable">
+            <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Giocatore</th>
+                    <th style="text-align:right">Punti</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
-      </div>
+    </div>
+    <button class="close-modal-btn" onclick="hideLiveRanking()">CHIUDI X</button>
+</div>
 
-      <div style="flex-grow:1"></div>
-      <button class="btn-action" onclick="nuovaPartitaLoop()">[ Prossima Partita ]</button>
+<div class="app-container">
+  
+  <header>
+    <div class="logo anton-font">TORNEO<span style="color:var(--neon-green)">.ENEA</span></div>
+    <button class="btn-small" onclick="fullReset()">RESET TOTALE</button>
+  </header>
+  
+  <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+
+  <div id="step-1" class="step-page active">
+    <h2 class="anton-font" style="color:white; border-bottom:2px solid var(--neon-green); display:inline-block;">CONFIGURAZIONE</h2>
+    
+    <div class="input-header">
+        <label style="margin-top:0">Lista Giocatori</label>
+        <span class="player-counter">TOTALE: <span id="playerCountVal">0</span></span>
+    </div>
+    
+    <textarea id="playerInput" rows="6" placeholder="ES: MARCO, LUCA..." oninput="checkInputChanges()"></textarea>
+    
+    <div id="duplicateAlert" class="warning-box"></div>
+    
+    <label>Giocatori per Squadra</label>
+    <input type="number" id="teamSize" value="2" min="1">
+    
+    <label>Durata Partita</label>
+    <div class="time-inputs">
+      <div>
+        <input type="number" id="timeMin" value="5" placeholder="Min">
+      </div>
+      <div>
+        <input type="number" id="timeSec" value="00" placeholder="Sec">
+      </div>
     </div>
 
+    <button id="btnGenerate" class="btn-action" onclick="generateTeams()">CREA SQUADRE</button>
   </div>
 
-  <script>
-    // --- DATI ---
-    let playersDB = {};
-    let currentTeams = [];
-    let matchTimeSeconds = 0;
-    let timerInterval = null;
-    let isPaused = false;
-    // --- NAVIGAZIONE STEPS ---
-    function showStep(stepNumber) {
-      document.querySelectorAll('.step-page').forEach(el => el.classList.remove('active'));
-      document.getElementById(`step-${stepNumber}`).classList.add('active');
-      document.getElementById('progressBar').style.width = (stepNumber * 20) + "%";
-    }
-    // --- STEP 1 -> 2: LOGICA GENERAZIONE SQUADRE ---
-    function goToStep2_Genera() {
-      const input = document.getElementById('playerInput').value;
-      const size = parseInt(document.getElementById('teamSize').value);
-      let names = input.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
-      if (names.length < 2) {
-        alert("ERRORE: Inserisci almeno 2 giocatori.");
-        return;
-      }
+  <div id="step-2" class="step-page">
+    <h2 class="anton-font" style="color:white;">PROSSIME SFIDE</h2>
+    <div id="matchesList"></div>
+    <button class="btn-action" onclick="startMatch()">AVVIA PARTITA</button>
+  </div>
+
+  <div id="step-3" class="step-page">
+    <h2 class="anton-font" style="text-align:center; color:#666;">MATCH IN CORSO</h2>
+    
+    <div id="timerDisplay">00:00</div>
+    
+    <div style="text-align:center; margin-bottom: 20px; display:flex; justify-content:center; gap:10px;">
+      <button class="btn-small" style="padding: 10px 20px; font-size:1rem; border-color: #666; color: #ccc;" onclick="togglePause()">
+        <span id="pauseBtnLabel">PAUSA ||</span>
+      </button>
+
+      <button class="btn-small btn-blue" style="padding: 10px 20px; font-size:1rem;" onclick="showLiveRanking()">
+        🏆 CLASSIFICA LIVE
+      </button>
+    </div>
+
+    <div style="flex-grow:1"></div> <button id="btnEndMatch" class="btn-action btn-red" onclick="tryFinishMatch()">FISCHIO FINALE (CHIUDI ORA)</button>
+  </div>
+
+  <div id="step-4" class="step-page">
+    <h2 class="anton-font" style="color:white;">CHI HA VINTO?</h2>
+    <p style="color:#666; font-size:0.9rem;">Tocca la squadra vincente. Tocca entrambe per pareggio.</p>
+    
+    <div id="scoringList" style="margin-top:20px;"></div>
+    
+    <button class="btn-action" onclick="saveScores()">SALVA E CLASSIFICA</button>
+  </div>
+
+  <div id="step-5" class="step-page">
+    <h2 class="anton-font" style="color:white;">CLASSIFICA</h2>
+    <p style="color:#666; font-size:0.8rem; margin-bottom:10px;">Usa i tasti + e - per correggere i punti manualmente.</p>
+    
+    <div style="overflow-y:auto; border: 1px solid #333; border-radius: 4px;">
+      <table id="rankingTable">
+        <thead>
+          <tr>
+            <th width="15%">#</th>
+            <th>Giocatore</th>
+            <th width="35%" style="text-align:right">PT</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    
+    <button class="btn-action" onclick="nextRound()">PROSSIMO TURNO</button>
+  </div>
+
+</div>
+
+<script>
+  // --- STATO DELL'APP ---
+  let playersDB = {}; // { "Nome": punti }
+  let currentTeams = []; // [[p1, p2], [p3, p4]...]
+  let previousTeamsSignature = ""; // Stringa per ricordare l'ultimo turno
+  
+  // Variabili Timer
+  let timerInterval = null;
+  let endTime = null;     
+  let remainingMs = 0;    
+  let isPaused = false;
+  let totalMatchMs = 0;   
+  let wakeLock = null;    
+  let isMatchRunning = false; 
+
+  // --- LOGICA DI NAVIGAZIONE ---
+  function showStep(n) {
+    document.querySelectorAll('.step-page').forEach(el => el.classList.remove('active'));
+    document.getElementById(`step-${n}`).classList.add('active');
+    document.getElementById('progressBar').style.width = (n * 20) + "%";
+  }
+
+  // --- NUOVA FUNZIONE: CONTROLLO INPUT REAL-TIME ---
+  function checkInputChanges() {
+      const raw = document.getElementById('playerInput').value.toUpperCase();
+      // Estrai nomi puliti
+      const names = raw.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+      
+      // 1. Aggiorna contatore
+      document.getElementById('playerCountVal').innerText = names.length;
+
+      // 2. Controllo duplicati
+      const seen = new Set();
+      const duplicates = new Set();
       names.forEach(n => {
-        if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;
+          if (seen.has(n)) duplicates.add(n);
+          seen.add(n);
       });
-      names = names.sort(() => Math.random() - 0.5);
-      currentTeams = [];
-      for (let i = 0; i < names.length; i += size) {
-        currentTeams.push(names.slice(i, i + size));
-      }
-      // UNISCI GIOCATORE RIMASTO SOLO
-      if (currentTeams.length > 1) {
-        const lastTeamIndex = currentTeams.length - 1;
-        if (currentTeams[lastTeamIndex].length === 1) {
-          const lonePlayer = currentTeams[lastTeamIndex][0];
-          currentTeams.pop();
-          currentTeams[currentTeams.length - 1].push(lonePlayer);
-        }
-      }
-      renderMatchups();
-      showStep(2);
-    }
 
-    function renderMatchups() {
-      const div = document.getElementById('matchupsContainer');
-      div.innerHTML = '';
-      for (let i = 0; i < currentTeams.length; i += 2) {
-        const t1 = currentTeams[i];
-        const t2 = currentTeams[i + 1];
-        const card = document.createElement('div');
-        card.className = 'match-card';
-        if (t2) {
-          card.innerHTML = `
-                    <div style="color:white; font-size:1.3em;">${t1.join(' + ')}</div>
-                    <span class="vs-badge">VS</span>
-                    <div style="color:var(--danger); font-size:1.3em;">${t2.join(' + ')}</div>
-                `;
-        } else {
-          card.innerHTML = `
-                    <div style="color:#888; font-size:1.2em;">${t1.join(' + ')}</div>
-                    <span class="vs-badge" style="background:#444; color:#aaa">IN ATTESA (RIPOSO)</span>
-                `;
-        }
-        div.appendChild(card);
-      }
-    }
-    // --- STEP 2 -> 3: TIMER ---
-    function goToStep3_Timer() {
-      const min = parseInt(document.getElementById('timeMin').value) || 0;
-      const sec = parseInt(document.getElementById('timeSec').value) || 0;
-      matchTimeSeconds = (min * 60) + sec;
-      if (matchTimeSeconds === 0) matchTimeSeconds = 300;
-      renderTimer(matchTimeSeconds);
-      document.getElementById('timerDisplay').classList.remove('pulse');
-      document.getElementById('btnEndMatch').disabled = true;
-      document.getElementById('btnEndMatch').innerText = "PARTITA IN CORSO...";
-      document.getElementById('btnEndMatch').style.opacity = "0.5";
-      document.getElementById('btnEndMatch').classList.remove('btn-red');
-      suonaFischio();
-      startTimer();
-      showStep(3);
-    }
+      const alertBox = document.getElementById('duplicateAlert');
+      const genBtn = document.getElementById('btnGenerate');
 
-    function startTimer() {
-      clearInterval(timerInterval);
-      isPaused = false;
-      timerInterval = setInterval(() => {
-        if (!isPaused) {
-          matchTimeSeconds--;
-          renderTimer(matchTimeSeconds);
-          if (matchTimeSeconds <= 10) document.getElementById('timerDisplay').classList.add('pulse');
-          if (matchTimeSeconds <= 0) {
-            clearInterval(timerInterval);
-            suonaFischio();
-            timerEndedUI();
-          }
-        }
-      }, 1000);
-    }
-
-    function togglePause() {
-      isPaused = !isPaused;
-    }
-
-    function timerEndedUI() {
-      document.getElementById('timerDisplay').innerText = "00:00";
-      const btn = document.getElementById('btnEndMatch');
-      btn.disabled = false;
-      btn.style.opacity = "1";
-      btn.classList.add('btn-red');
-      btn.innerText = "FISCHIO FINALE [ VAI AI RISULTATI ]";
-    }
-
-    function renderTimer(s) {
-      const m = Math.floor(s / 60).toString().padStart(2, '0');
-      const sec = (s % 60).toString().padStart(2, '0');
-      document.getElementById('timerDisplay').innerText = `${m}:${sec}`;
-    }
-    // --- STEP 3 -> 4: INTERFACCIA RISULTATI (PULSANTI) ---
-    function goToStep4_Risultati() {
-      const div = document.getElementById('scoresContainer');
-      div.innerHTML = '';
-      for (let i = 0; i < currentTeams.length; i += 2) {
-        const t1 = currentTeams[i];
-        const t2 = currentTeams[i + 1];
-        const matchId = i;
-        if (t2) {
-          const container = document.createElement('div');
-          // Nomi formattati per i pulsanti
-          const name1 = t1.length > 2 ? `TEAM A<br><small>${t1[0]}...</small>` : t1.join('<br>');
-          const name2 = t2.length > 2 ? `TEAM B<br><small>${t2[0]}...</small>` : t2.join('<br>');
-          container.innerHTML = `
-                    <div style="text-align:center; font-size:1rem; color:#666; margin-bottom:10px;">MATCH ${i/2 + 1}</div>
-                    
-                    <div class="score-match-container">
-                        <button class="team-select-btn" id="btn-m${matchId}-t0" onclick="toggleSelection(${matchId}, 0)">
-                            ${name1}
-                        </button>
-                        
-                        <div style="font-size: 1.5rem; color:#444;">VS</div>
-                        
-                        <button class="team-select-btn" id="btn-m${matchId}-t1" onclick="toggleSelection(${matchId}, 1)">
-                            ${name2}
-                        </button>
-                    </div>
-                    
-                    <div id="status-m${matchId}" class="match-result-status status-none">SELEZIONA ESITO</div>
-                `;
-          div.appendChild(container);
-        }
-      }
-      showStep(4);
-    }
-
-    function toggleSelection(matchId, teamIndex) {
-      const btn = document.getElementById(`btn-m${matchId}-t${teamIndex}`);
-      btn.classList.toggle('selected');
-      updateMatchStatus(matchId);
-    }
-
-    function updateMatchStatus(matchId) {
-      const btn0 = document.getElementById(`btn-m${matchId}-t0`);
-      const btn1 = document.getElementById(`btn-m${matchId}-t1`);
-      const statusDiv = document.getElementById(`status-m${matchId}`);
-      const sel0 = btn0.classList.contains('selected');
-      const sel1 = btn1.classList.contains('selected');
-      if (sel0 && sel1) {
-        statusDiv.innerText = "PAREGGIO (2 Punti)";
-        statusDiv.className = "match-result-status status-draw";
-      } else if (sel0) {
-        statusDiv.innerText = "VINCITORE: SQUADRA SX (3 Punti)";
-        statusDiv.className = "match-result-status status-win";
-      } else if (sel1) {
-        statusDiv.innerText = "VINCITORE: SQUADRA DX (3 Punti)";
-        statusDiv.className = "match-result-status status-win";
+      if (duplicates.size > 0) {
+          // Trovati duplicati
+          const dupList = Array.from(duplicates).join(", ");
+          alertBox.style.display = "block";
+          alertBox.innerHTML = `⚠️ <b>ATTENZIONE:</b> "${dupList}" è inserito più volte.<br>Aggiungi il cognome per distinguerli!`;
+          genBtn.disabled = true; // Blocca il pulsante
+          genBtn.innerText = "CORREGGI I NOMI";
       } else {
-        statusDiv.innerText = "SELEZIONA ESITO";
-        statusDiv.className = "match-result-status status-none";
+          // Tutto ok
+          alertBox.style.display = "none";
+          genBtn.disabled = false;
+          genBtn.innerText = "CREA SQUADRE";
       }
+  }
+
+  // --- STEP 1 -> 2: GENERAZIONE SQUADRE ---
+  function generateTeams() {
+    const rawNames = document.getElementById('playerInput').value.toUpperCase();
+    const size = parseInt(document.getElementById('teamSize').value);
+    
+    let baseNames = rawNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+    
+    if (baseNames.length < 2) {
+      alert("Inserisci almeno 2 giocatori!");
+      return;
     }
-    // --- STEP 4 -> 5: CALCOLO PUNTI ---
-    function goToStep5_Classifica() {
-      for (let i = 0; i < currentTeams.length; i += 2) {
-        const t1 = currentTeams[i];
-        const t2 = currentTeams[i + 1];
-        if (t2) {
-          const btn0 = document.getElementById(`btn-m${i}-t0`);
-          const btn1 = document.getElementById(`btn-m${i}-t1`);
-          const win0 = btn0.classList.contains('selected');
-          const win1 = btn1.classList.contains('selected');
-          let pts0 = 0;
-          let pts1 = 0;
-          if (win0 && win1) {
-            pts0 = 2;
-            pts1 = 2;
-          } else if (win0) {
-            pts0 = 3;
-            pts1 = 1;
-          } else if (win1) {
-            pts0 = 1;
-            pts1 = 3;
-          }
-          t1.forEach(p => playersDB[p] += pts0);
-          t2.forEach(p => playersDB[p] += pts1);
+
+    // Controllo sicurezza finale sui duplicati
+    const uniqueCheck = new Set(baseNames);
+    if(uniqueCheck.size !== baseNames.length) {
+        alert("Ci sono ancora nomi duplicati. Correggili prima di procedere.");
+        return;
+    }
+
+    // Inizializza DB giocatori
+    baseNames.forEach(n => {
+      if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;
+    });
+
+    let attempts = 0;
+    let validGeneration = false;
+    let tempTeams = [];
+
+    // Loop per trovare una combinazione diversa dalla precedente
+    while (!validGeneration && attempts < 50) {
+        let names = [...baseNames];
+        
+        // 1. Mischia (Fisher-Yates)
+        for (let i = names.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [names[i], names[j]] = [names[j], names[i]];
         }
-      }
-      renderRanking();
-      showStep(5);
+
+        tempTeams = [];
+        const standardMatchSize = size * 2; 
+
+        // 2. Crea partite STANDARD
+        let namesPool = [...names]; 
+        while (namesPool.length >= standardMatchSize) {
+            const teamA = namesPool.splice(0, size);
+            const teamB = namesPool.splice(0, size);
+            tempTeams.push(teamA);
+            tempTeams.push(teamB);
+        }
+
+        // 3. GESTIONE DEL RESTO
+        const remainingCount = namesPool.length;
+
+        if (remainingCount === 1) {
+            if (tempTeams.length > 0) {
+                tempTeams[tempTeams.length - 1].push(namesPool[0]);
+            }
+        } else if (remainingCount === 2) {
+            tempTeams.push([namesPool[0]]);
+            tempTeams.push([namesPool[1]]);
+        } else if (remainingCount === 3) {
+            tempTeams.push([namesPool[0], namesPool[1]]);
+            tempTeams.push([namesPool[2]]);
+        } else if (remainingCount === 4) {
+            tempTeams.push([namesPool[0], namesPool[1]]);
+            tempTeams.push([namesPool[2], namesPool[3]]);
+        } else if (remainingCount > 4) {
+            const half = Math.ceil(remainingCount / 2);
+            tempTeams.push(namesPool.slice(0, half));
+            tempTeams.push(namesPool.slice(half));
+        }
+
+        // 4. CREA "FIRMA" PER IL CONFRONTO
+        const currentSignature = JSON.stringify(
+            tempTeams.map(t => [...t].sort().join('|')).sort()
+        );
+
+        if (currentSignature !== previousTeamsSignature) {
+            validGeneration = true;
+            previousTeamsSignature = currentSignature;
+            currentTeams = tempTeams;
+        } else {
+            attempts++;
+        }
     }
 
-    function renderRanking() {
-      const tbody = document.querySelector('#rankingTable tbody');
+    if (!validGeneration) {
+        currentTeams = tempTeams;
+    }
+
+    renderMatchPreview();
+    showStep(2);
+  }
+
+  function renderMatchPreview() {
+    const container = document.getElementById('matchesList');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < currentTeams.length; i += 2) {
+      const t1 = currentTeams[i];
+      const t2 = currentTeams[i + 1];
+      
+      const div = document.createElement('div');
+      div.className = 'match-card';
+      
+      if (t2) {
+        div.innerHTML = `
+          <div style="font-weight:bold; color:white;">${t1.join(' + ')}</div>
+          <span class="vs-badge">VS</span>
+          <div style="font-weight:bold; color:var(--danger);">${t2.join(' + ')}</div>
+        `;
+      } else {
+        div.innerHTML = `
+          <div style="color:#888;">${t1.join(' + ')}</div>
+          <span class="vs-badge">RIPOSO / ATTESA</span>
+        `;
+      }
+      container.appendChild(div);
+    }
+  }
+
+  // --- STEP 2 -> 3: TIMER ---
+  async function startMatch() {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch (err) { console.log('Wake Lock non supportato'); }
+
+    const mins = parseInt(document.getElementById('timeMin').value) || 0;
+    const secs = parseInt(document.getElementById('timeSec').value) || 0;
+    totalMatchMs = (mins * 60 + secs) * 1000;
+    
+    if (totalMatchMs <= 0) totalMatchMs = 300000;
+
+    remainingMs = totalMatchMs;
+    isPaused = false;
+    isMatchRunning = true;
+    resumeTimer(); 
+    
+    document.getElementById('whistleSound').play().catch(()=>{});
+    document.getElementById('timerDisplay').classList.remove('pulse', 'timer-paused');
+    
+    const btnEnd = document.getElementById('btnEndMatch');
+    btnEnd.innerText = "FISCHIO FINALE (CHIUDI ORA)";
+    btnEnd.className = "btn-action btn-red";
+    
+    showStep(3);
+  }
+
+  function resumeTimer() {
+    endTime = Date.now() + remainingMs;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      const now = Date.now();
+      const diff = endTime - now;
+
+      if (diff <= 0) {
+        matchEnded();
+      } else {
+        renderTimer(diff);
+        if (diff < 10000) document.getElementById('timerDisplay').classList.add('pulse');
+      }
+    }, 200);
+  }
+
+  function togglePause() {
+    if (!isMatchRunning) return; 
+    
+    const btnLabel = document.getElementById('pauseBtnLabel');
+    const display = document.getElementById('timerDisplay');
+
+    if (!isPaused) {
+      isPaused = true;
+      clearInterval(timerInterval);
+      remainingMs = endTime - Date.now();
+      display.classList.add('timer-paused');
+      btnLabel.innerText = "RIPRENDI ▶";
+    } else {
+      isPaused = false;
+      display.classList.remove('timer-paused');
+      btnLabel.innerText = "PAUSA ||";
+      resumeTimer();
+    }
+  }
+
+  function renderTimer(ms) {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+  }
+
+  function tryFinishMatch() {
+    if (isMatchRunning) {
+        if (confirm("Vuoi fischiare la fine della partita in anticipo?")) {
+            matchEnded();
+        }
+    } else {
+        finishMatchUI();
+    }
+  }
+
+  function matchEnded() {
+    clearInterval(timerInterval);
+    isMatchRunning = false;
+    
+    document.getElementById('whistleSound').play().catch(()=>{});
+    document.getElementById('timerDisplay').innerText = "00:00";
+    document.getElementById('timerDisplay').classList.remove('pulse');
+    
+    const btnEnd = document.getElementById('btnEndMatch');
+    btnEnd.innerText = "VAI AI RISULTATI >>";
+    btnEnd.className = "btn-action"; 
+    
+    if (wakeLock) wakeLock.release();
+    wakeLock = null;
+  }
+
+  function finishMatchUI() {
+    buildScoreUI();
+    showStep(4);
+  }
+
+  // --- STEP 3: CLASSIFICA LIVE (MODAL) ---
+  function showLiveRanking() {
+      const modal = document.getElementById('liveRankingModal');
+      const tbody = document.querySelector('#liveRankingTable tbody');
       tbody.innerHTML = '';
+
       const sorted = Object.keys(playersDB)
-        .map(name => ({
-          n: name,
-          p: playersDB[name]
-        }))
-        .sort((a, b) => b.p - a.p);
-      sorted.forEach((item, idx) => {
-        const tr = document.createElement('tr');
-        let medal = "";
-        if (idx === 0) medal = "🥇";
-        if (idx === 1) medal = "🥈";
-        if (idx === 2) medal = "🥉";
-        tr.innerHTML = `<td>${idx+1} ${medal}</td><td>${item.n}</td><td>${item.p}</td>`;
-        tbody.appendChild(tr);
+          .map(key => ({ name: key, score: playersDB[key] }))
+          .sort((a, b) => b.score - a.score);
+
+      sorted.forEach((p, idx) => {
+          const tr = document.createElement('tr');
+          let medal = "";
+          if (idx === 0) medal = "🥇";
+          if (idx === 1) medal = "🥈";
+          if (idx === 2) medal = "🥉";
+          tr.innerHTML = `
+            <td style="color:#888">${idx + 1} ${medal}</td>
+            <td style="color:white">${p.name}</td>
+            <td style="text-align:right; font-weight:bold; color:var(--neon-green)">${p.score}</td>
+          `;
+          tbody.appendChild(tr);
       });
+
+      modal.classList.add('active-modal');
+  }
+
+  function hideLiveRanking() {
+      document.getElementById('liveRankingModal').classList.remove('active-modal');
+  }
+
+  // --- STEP 3 -> 4: UI PUNTEGGI ---
+  function buildScoreUI() {
+    const container = document.getElementById('scoringList');
+    container.innerHTML = '';
+
+    for (let i = 0; i < currentTeams.length; i += 2) {
+      const t1 = currentTeams[i];
+      const t2 = currentTeams[i + 1];
+      
+      if (!t2) continue;
+
+      const row = document.createElement('div');
+      row.className = 'score-row';
+      const matchIndex = i/2;
+
+      row.innerHTML = `
+        <div class="team-btn" id="m${matchIndex}_t1" onclick="selectWinner(${matchIndex}, 1)">
+          <div class="team-names">${t1.join('<br>')}</div>
+          <div class="result-label" id="lbl_m${matchIndex}_t1">Perso (1pt)</div>
+        </div>
+        
+        <div style="display:flex; align-items:center; font-weight:bold; color:#444;">VS</div>
+        
+        <div class="team-btn" id="m${matchIndex}_t2" onclick="selectWinner(${matchIndex}, 2)">
+          <div class="team-names">${t2.join('<br>')}</div>
+          <div class="result-label" id="lbl_m${matchIndex}_t2">Perso (1pt)</div>
+        </div>
+      `;
+      container.appendChild(row);
+    }
+  }
+
+  function selectWinner(matchIdx, teamNum) {
+    const btn1 = document.getElementById(`m${matchIdx}_t1`);
+    const btn2 = document.getElementById(`m${matchIdx}_t2`);
+    const lbl1 = document.getElementById(`lbl_m${matchIdx}_t1`);
+    const lbl2 = document.getElementById(`lbl_m${matchIdx}_t2`);
+
+    if (teamNum === 1) {
+      btn1.classList.toggle('selected');
+    } else {
+      btn2.classList.toggle('selected');
     }
 
-    function nuovaPartitaLoop() {
-      goToStep2_Genera();
-    }
+    const t1Sel = btn1.classList.contains('selected');
+    const t2Sel = btn2.classList.contains('selected');
 
-    function suonaFischio() {
-      const audio = document.getElementById('audioFischio');
-      audio.currentTime = 0;
-      audio.play().catch(e => console.warn("Audio bloccato"));
+    if (t1Sel && t2Sel) {
+      lbl1.innerText = "PAREGGIO (2pt)"; lbl2.innerText = "PAREGGIO (2pt)";
+      lbl1.style.color = "white"; lbl2.style.color = "white";
+    } else if (t1Sel) {
+      lbl1.innerText = "VITTORIA (3pt)"; lbl2.innerText = "SCONFITTA (1pt)";
+      lbl1.style.color = "var(--neon-green)"; lbl2.style.color = "#666";
+    } else if (t2Sel) {
+      lbl1.innerText = "SCONFITTA (1pt)"; lbl2.innerText = "VITTORIA (3pt)";
+      lbl1.style.color = "#666"; lbl2.style.color = "var(--neon-green)";
+    } else {
+      lbl1.innerText = "SELEZIONA ESITO"; lbl2.innerText = "SELEZIONA ESITO";
     }
-    // --- NUOVA FUNZIONE RESET MANUALE ---
-    function resetApp() {
-      if (confirm("Vuoi azzerare il torneo e tornare all'inizio?")) {
-        // 1. Reset variabili
-        playersDB = {};
-        currentTeams = [];
-        matchTimeSeconds = 0;
-        clearInterval(timerInterval);
-        isPaused = false;
-        // 2. Pulisci Contenitori
-        document.getElementById('matchupsContainer').innerHTML = '';
-        document.getElementById('scoresContainer').innerHTML = '';
-        document.querySelector('#rankingTable tbody').innerHTML = '';
-        // 3. Reset Timer UI
-        document.getElementById('timerDisplay').innerText = "00:00";
-        document.getElementById('timerDisplay').classList.remove('pulse');
-        const btnEnd = document.getElementById('btnEndMatch');
-        btnEnd.disabled = true;
-        btnEnd.innerText = "ATTENDI FINE TEMPO";
-        btnEnd.classList.remove('btn-red');
-        btnEnd.style.opacity = "0.5";
-        // 4. Torna alla pagina 1
-        showStep(1);
+  }
+
+  // --- STEP 4 -> 5: SALVATAGGIO ---
+  function saveScores() {
+    const matchesCount = Math.floor(currentTeams.length / 2);
+    
+    for (let m = 0; m < matchesCount; m++) {
+      const t1 = currentTeams[m * 2];
+      const t2 = currentTeams[m * 2 + 1];
+      
+      const btn1 = document.getElementById(`m${m}_t1`);
+      const btn2 = document.getElementById(`m${m}_t2`);
+      
+      const win1 = btn1.classList.contains('selected');
+      const win2 = btn2.classList.contains('selected');
+
+      let pts1 = 0, pts2 = 0;
+
+      if (win1 && win2) { pts1 = 2; pts2 = 2; }
+      else if (win1) { pts1 = 3; pts2 = 1; }
+      else if (win2) { pts1 = 1; pts2 = 3; }
+      else {
+        alert("Attenzione: Seleziona un esito per tutte le partite!");
+        return; 
       }
+
+      t1.forEach(p => playersDB[p] += pts1);
+      t2.forEach(p => playersDB[p] += pts2);
     }
-  </script>
+
+    renderRanking();
+    showStep(5);
+  }
+
+  // --- STEP 5: CLASSIFICA E MODIFICHE MANUALI ---
+  function renderRanking() {
+    const tbody = document.querySelector('#rankingTable tbody');
+    tbody.innerHTML = '';
+    
+    const sortedPlayers = Object.keys(playersDB)
+      .map(key => ({ name: key, score: playersDB[key] }))
+      .sort((a, b) => b.score - a.score);
+
+    sortedPlayers.forEach((p, index) => {
+      const tr = document.createElement('tr');
+      let medal = "";
+      if (index === 0) medal = "🥇";
+      if (index === 1) medal = "🥈";
+      if (index === 2) medal = "🥉";
+      
+      const safeName = p.name.replace(/'/g, "\\'"); 
+
+      tr.innerHTML = `
+        <td>${index + 1} ${medal}</td>
+        <td>${p.name}</td>
+        <td>
+            <div class="manual-score-container">
+                <button class="btn-adj minus" onclick="manualAdjust('${safeName}', -1)">-</button>
+                <span style="font-weight:bold; min-width:30px; text-align:center;">${p.score}</span>
+                <button class="btn-adj plus" onclick="manualAdjust('${safeName}', 1)">+</button>
+            </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function manualAdjust(playerName, amount) {
+    if(playersDB.hasOwnProperty(playerName)) {
+        playersDB[playerName] += amount;
+        renderRanking(); 
+    }
+  }
+
+  function nextRound() {
+    generateTeams();
+  }
+
+  function fullReset() {
+    if(confirm("Reset totale? Cancellerà tutti i giocatori e punti.")) {
+      playersDB = {};
+      currentTeams = [];
+      previousTeamsSignature = "";
+      clearInterval(timerInterval);
+      document.getElementById('playerInput').value = "";
+      document.getElementById('playerCountVal').innerText = "0"; // Reset counter
+      document.getElementById('duplicateAlert').style.display = "none";
+      document.getElementById('btnGenerate').disabled = false;
+      document.getElementById('btnGenerate').innerText = "CREA SQUADRE";
+      showStep(1);
+    }
+  }
+</script>
 
 </body>
-
 </html>
