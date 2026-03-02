@@ -176,6 +176,11 @@
         border-color: var(--blue);
         color: var(--blue);
     }
+    .btn-blue-fill {
+        background-color: var(--blue);
+        color: white;
+        border: none;
+    }
 
     /* MATCH CARDS */
     .match-card {
@@ -343,7 +348,10 @@
   
   <header>
     <div class="logo anton-font">TORNEO<span style="color:var(--neon-green)">.ENEA</span></div>
-    <button class="btn-small" onclick="fullReset()">RESET TOTALE</button>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-small btn-blue" onclick="openSettings()">⚙️ MODIFICA</button>
+        <button class="btn-small" onclick="fullReset()">RESET TOTALE</button>
+    </div>
   </header>
   
   <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
@@ -374,6 +382,7 @@
     </div>
 
     <button id="btnGenerate" class="btn-action" onclick="generateTeams()">CREA SQUADRE</button>
+    <button id="btnBackToTournament" class="btn-action btn-blue-fill" style="display:none; margin-top:10px; font-size:1.1rem; padding:15px;" onclick="backToTournament()">SALVA E TORNA AL TORNEO</button>
   </div>
 
   <div id="step-2" class="step-page">
@@ -411,8 +420,10 @@
 
   <div id="step-5" class="step-page">
     <h2 class="anton-font" style="color:white;">CLASSIFICA</h2>
-    <p style="color:#666; font-size:0.8rem; margin-bottom:10px;">Usa i tasti + e - per correggere i punti manualmente.</p>
+    <p style="color:#666; font-size:0.8rem; margin-bottom:10px;">Usa i tasti + e - per correggere i punti. Poi clicca SALVA MODIFICHE.</p>
     
+    <button id="btnSaveRanking" class="btn-action btn-blue-fill" style="display:none; margin-bottom: 15px; font-size: 1.1rem; padding: 15px;" onclick="applyRankingChanges()">SALVA MODIFICHE CLASSIFICA</button>
+
     <div style="overflow-y:auto; border: 1px solid #333; border-radius: 4px;">
       <table id="rankingTable">
         <thead>
@@ -426,7 +437,7 @@
       </table>
     </div>
     
-    <button class="btn-action" onclick="nextRound()">PROSSIMO TURNO</button>
+    <button class="btn-action" onclick="nextRound()" style="margin-top: 15px;">PROSSIMO TURNO</button>
   </div>
 
 </div>
@@ -445,6 +456,9 @@
   let totalMatchMs = 0;   
   let wakeLock = null;    
   let isMatchRunning = false; 
+  
+  // Variabile per Settings Live
+  let activeStepBeforeSettings = 1;
 
   // --- LOGICA DI NAVIGAZIONE ---
   function showStep(n) {
@@ -453,16 +467,57 @@
     document.getElementById('progressBar').style.width = (n * 20) + "%";
   }
 
+  // --- IMPOSTAZIONI LIVE ---
+  function openSettings() {
+      const activeEl = document.querySelector('.step-page.active');
+      if (activeEl) {
+          const currentStepNum = parseInt(activeEl.id.replace('step-', ''));
+          if (currentStepNum !== 1) {
+              activeStepBeforeSettings = currentStepNum;
+          }
+      }
+      
+      showStep(1);
+      
+      if (activeStepBeforeSettings > 1) {
+          document.getElementById('btnBackToTournament').style.display = 'block';
+          document.getElementById('btnGenerate').innerText = "CREA NUOVE SQUADRE (FORZA PROSSIMO TURNO)";
+          document.getElementById('btnGenerate').style.fontSize = "1rem";
+      } else {
+          document.getElementById('btnBackToTournament').style.display = 'none';
+          document.getElementById('btnGenerate').innerText = "CREA SQUADRE";
+      }
+  }
+
+  function backToTournament() {
+      syncPlayersDB();
+      showStep(activeStepBeforeSettings);
+  }
+
+  function syncPlayersDB() {
+      const rawNames = document.getElementById('playerInput').value.toUpperCase();
+      let baseNames = rawNames.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
+      
+      // Aggiungi i nuovi nomi
+      baseNames.forEach(n => {
+        if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;
+      });
+
+      // ELIMINA dal database i nomi che non sono più nel box di testo
+      Object.keys(playersDB).forEach(n => {
+          if (!baseNames.includes(n)) {
+              delete playersDB[n];
+          }
+      });
+  }
+
   // --- NUOVA FUNZIONE: CONTROLLO INPUT REAL-TIME ---
   function checkInputChanges() {
       const raw = document.getElementById('playerInput').value.toUpperCase();
-      // Estrai nomi puliti
       const names = raw.split(/[\n,]+/).map(n => n.trim()).filter(n => n.length > 0);
       
-      // 1. Aggiorna contatore
       document.getElementById('playerCountVal').innerText = names.length;
 
-      // 2. Controllo duplicati
       const seen = new Set();
       const duplicates = new Set();
       names.forEach(n => {
@@ -474,17 +529,19 @@
       const genBtn = document.getElementById('btnGenerate');
 
       if (duplicates.size > 0) {
-          // Trovati duplicati
           const dupList = Array.from(duplicates).join(", ");
           alertBox.style.display = "block";
           alertBox.innerHTML = `⚠️ <b>ATTENZIONE:</b> "${dupList}" è inserito più volte.<br>Aggiungi il cognome per distinguerli!`;
-          genBtn.disabled = true; // Blocca il pulsante
+          genBtn.disabled = true; 
           genBtn.innerText = "CORREGGI I NOMI";
       } else {
-          // Tutto ok
           alertBox.style.display = "none";
           genBtn.disabled = false;
-          genBtn.innerText = "CREA SQUADRE";
+          if(activeStepBeforeSettings > 1) {
+              genBtn.innerText = "CREA NUOVE SQUADRE (FORZA PROSSIMO TURNO)";
+          } else {
+              genBtn.innerText = "CREA SQUADRE";
+          }
       }
   }
 
@@ -500,27 +557,40 @@
       return;
     }
 
-    // Controllo sicurezza finale sui duplicati
     const uniqueCheck = new Set(baseNames);
     if(uniqueCheck.size !== baseNames.length) {
         alert("Ci sono ancora nomi duplicati. Correggili prima di procedere.");
         return;
     }
 
-    // Inizializza DB giocatori
+    // Inizializza DB giocatori senza azzerare i punti esistenti
     baseNames.forEach(n => {
       if (!playersDB.hasOwnProperty(n)) playersDB[n] = 0;
     });
+
+    // ELIMINA dal database i giocatori cancellati o rinominati
+    Object.keys(playersDB).forEach(n => {
+        if (!baseNames.includes(n)) {
+            delete playersDB[n];
+        }
+    });
+
+    // Se stiamo forzando la creazione mentre il timer andava, fermiamolo
+    if(isMatchRunning) {
+        clearInterval(timerInterval);
+        isMatchRunning = false;
+        if (wakeLock) { wakeLock.release(); wakeLock = null; }
+        document.getElementById('timerDisplay').innerText = "00:00";
+        document.getElementById('timerDisplay').classList.remove('pulse');
+    }
 
     let attempts = 0;
     let validGeneration = false;
     let tempTeams = [];
 
-    // Loop per trovare una combinazione diversa dalla precedente
     while (!validGeneration && attempts < 50) {
         let names = [...baseNames];
         
-        // 1. Mischia (Fisher-Yates)
         for (let i = names.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [names[i], names[j]] = [names[j], names[i]];
@@ -529,7 +599,6 @@
         tempTeams = [];
         const standardMatchSize = size * 2; 
 
-        // 2. Crea partite STANDARD
         let namesPool = [...names]; 
         while (namesPool.length >= standardMatchSize) {
             const teamA = namesPool.splice(0, size);
@@ -538,7 +607,6 @@
             tempTeams.push(teamB);
         }
 
-        // 3. GESTIONE DEL RESTO
         const remainingCount = namesPool.length;
 
         if (remainingCount === 1) {
@@ -560,7 +628,6 @@
             tempTeams.push(namesPool.slice(half));
         }
 
-        // 4. CREA "FIRMA" PER IL CONFRONTO
         const currentSignature = JSON.stringify(
             tempTeams.map(t => [...t].sort().join('|')).sort()
         );
@@ -578,6 +645,7 @@
         currentTeams = tempTeams;
     }
 
+    activeStepBeforeSettings = 2; // Aggiorna lo stato nel caso l'utente torni nelle impostazioni
     renderMatchPreview();
     showStep(2);
   }
@@ -838,6 +906,10 @@
 
   // --- STEP 5: CLASSIFICA E MODIFICHE MANUALI ---
   function renderRanking() {
+    // Nascondi pulsante salva ogni volta che rigeneriamo la classifica vera e propria
+    const btnSave = document.getElementById('btnSaveRanking');
+    if(btnSave) btnSave.style.display = 'none';
+
     const tbody = document.querySelector('#rankingTable tbody');
     tbody.innerHTML = '';
     
@@ -859,9 +931,9 @@
         <td>${p.name}</td>
         <td>
             <div class="manual-score-container">
-                <button class="btn-adj minus" onclick="manualAdjust('${safeName}', -1)">-</button>
-                <span style="font-weight:bold; min-width:30px; text-align:center;">${p.score}</span>
-                <button class="btn-adj plus" onclick="manualAdjust('${safeName}', 1)">+</button>
+                <button class="btn-adj minus" onclick="manualAdjust('${safeName}', -1, 'score_${index}')">-</button>
+                <span id="score_${index}" style="font-weight:bold; min-width:30px; text-align:center;">${p.score}</span>
+                <button class="btn-adj plus" onclick="manualAdjust('${safeName}', 1, 'score_${index}')">+</button>
             </div>
         </td>
       `;
@@ -869,11 +941,17 @@
     });
   }
 
-  function manualAdjust(playerName, amount) {
+  function manualAdjust(playerName, amount, spanId) {
     if(playersDB.hasOwnProperty(playerName)) {
-        playersDB[playerName] += amount;
-        renderRanking(); 
+        playersDB[playerName] += amount; // Aggiorna DB subito
+        document.getElementById(spanId).innerText = playersDB[playerName]; // Aggiorna solo il numerino visuale
+        document.getElementById('btnSaveRanking').style.display = 'block'; // Mostra il pulsante per salvare e riordinare
     }
+  }
+
+  function applyRankingChanges() {
+    // Ridisegna la classifica riordinandola
+    renderRanking(); 
   }
 
   function nextRound() {
@@ -885,12 +963,14 @@
       playersDB = {};
       currentTeams = [];
       previousTeamsSignature = "";
+      activeStepBeforeSettings = 1;
       clearInterval(timerInterval);
       document.getElementById('playerInput').value = "";
-      document.getElementById('playerCountVal').innerText = "0"; // Reset counter
+      document.getElementById('playerCountVal').innerText = "0"; 
       document.getElementById('duplicateAlert').style.display = "none";
       document.getElementById('btnGenerate').disabled = false;
       document.getElementById('btnGenerate').innerText = "CREA SQUADRE";
+      document.getElementById('btnBackToTournament').style.display = 'none';
       showStep(1);
     }
   }
