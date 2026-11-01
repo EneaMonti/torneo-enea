@@ -176,6 +176,37 @@
     .coin-chip.on { border-color: #d4af37; background: rgba(212,175,55,.3); }
     #coinResult { min-height: 1.6em; color: var(--neon); font-weight: 700; font-size: 1.15rem; margin: 4px 0 6px; }
     #coinBtn { background: #d4af37; color: #1a1300; }
+
+    /* Rubrica giocatori */
+    .rub-bar { display: flex; gap: 8px; margin-top: 8px; }
+    .rub-bar input { margin-top: 0; flex: 1; min-width: 0; text-transform: uppercase; }
+    .rub-bar .small { flex: none; padding: 0 14px; font-size: .85rem; }
+    .rub-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; max-height: 320px; overflow-y: auto; }
+    .rub-chip { padding: 10px 14px; border: 2px solid #333; border-radius: 999px; background: #111; color: #bbb; font-weight: 700; font-size: .95rem; cursor: pointer; }
+    .rub-chip[aria-pressed="true"] { border-color: var(--neon); background: rgba(57,255,20,.15); color: #fff; }
+    .rub-chip[aria-pressed="true"]::before { content: '✓ '; color: var(--neon); }
+    .rub-chip.edit { border-style: dashed; }
+    .rub-chip.edit::after { content: ' ✕'; color: var(--danger); }
+    .rub-empty { color: var(--muted); font-size: .9rem; margin: 4px 0; }
+    .rub-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    #rubEditBtn[aria-pressed="true"] { border-color: var(--danger); color: #ff6b8a; }
+    details summary { color: var(--muted); cursor: pointer; margin-top: 16px; font-size: .85rem; text-transform: uppercase; font-weight: 700; }
+
+    /* Pettorine */
+    .bib { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 999px; background: #222; color: #eee; margin: 0 0 5px; }
+    .bib-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgba(255,255,255,.55); display: inline-block; flex-shrink: 0; }
+    .bib[data-none] .bib-dot, .bib-chip[data-none] .bib-dot { background: transparent; border: 2px dashed #888; box-shadow: none; }
+    #bibBox { margin-top: 6px; }
+    .bib-chips { display: flex; flex-wrap: wrap; margin: 0 -4px; }
+    .bib-chip { display: inline-flex; align-items: center; gap: 7px; padding: 9px 13px; border: 2px solid #333; border-radius: 999px; background: #111; color: #aaa; margin: 4px; font-weight: 700; font-size: .85rem; cursor: pointer; }
+    .bib-chip[aria-pressed="true"] { border-color: var(--neon); color: #fff; background: rgba(57,255,20,.12); }
+    .match .bib { margin-top: 2px; }
+    #liveMatches { margin-bottom: 18px; }
+    .live-match { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #1a1a1a; border-radius: 6px; padding: 10px; margin-bottom: 8px; color: #fff; font-size: .9rem; }
+    .live-match > div { flex: 1; min-width: 0; }
+    .live-match > div:last-child { text-align: right; }
+    .live-match .vs { flex: none; }
+    .live-names { font-weight: 700; word-break: break-word; }
   </style>
 </head>
 <body>
@@ -192,10 +223,22 @@
     <h2 class="title anton">CONFIGURAZIONE</h2>
 
     <div class="input-header">
-      <label for="playerInput" style="margin-top:0">Lista giocatori</label>
-      <span class="counter">TOTALE: <span id="playerCount">0</span></span>
+      <label for="rubSearch" style="margin-top:0">Giocatori di oggi</label>
+      <span class="counter">SELEZIONATI: <span id="playerCount">0</span></span>
     </div>
-    <textarea id="playerInput" rows="6" placeholder="UN NOME PER RIGA, OPPURE SEPARATI DA VIRGOLA" autocapitalize="characters" autocomplete="off" spellcheck="false"></textarea>
+    <div class="rub-bar">
+      <input id="rubSearch" type="text" placeholder="Cerca o nuovo nome" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="done">
+      <button id="rubAdd" class="small blue" data-act="rubAdd" aria-label="Aggiungi giocatore">+ AGGIUNGI</button>
+    </div>
+    <div id="rubChips" class="rub-chips" aria-label="Rubrica giocatori"></div>
+    <div class="rub-tools">
+      <button class="small grey" data-act="rubNone">Deseleziona tutti</button>
+      <button id="rubEditBtn" class="small grey" data-act="rubEdit">✏️ Gestisci rubrica</button>
+    </div>
+    <details id="listDetails">
+      <summary>Scrivi o incolla la lista</summary>
+      <textarea id="playerInput" rows="6" placeholder="UN NOME PER RIGA, OPPURE SEPARATI DA VIRGOLA" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Lista giocatori di oggi"></textarea>
+    </details>
     <div id="dupAlert" class="warning" role="alert"></div>
     <p class="hint">Per cambiare nome a un giocatore senza perdere i punti, tocca il suo nome in classifica.</p>
 
@@ -217,6 +260,15 @@
       <input type="checkbox" id="compBonus">
       <span>+1 punto a chi gioca in inferiorità numerica</span>
     </label>
+
+    <label class="check" for="bibOn">
+      <input type="checkbox" id="bibOn">
+      <span>Assegna il colore della pettorina alle squadre</span>
+    </label>
+    <div id="bibBox">
+      <p class="hint">Tocca i colori che hai a disposizione (almeno 2):</p>
+      <div id="bibChips" class="bib-chips"></div>
+    </div>
 
     <button id="btnGenerate" class="btn stick" data-act="generate">CREA SQUADRE</button>
     <button id="btnBack" class="btn blue" style="display:none" data-act="backToTournament">SALVA E TORNA AL TORNEO</button>
@@ -250,6 +302,7 @@
       <button class="small grey extra" data-act="addTime" data-ms="60000" aria-label="Aggiungi 1 minuto">+1 MIN</button>
       <button class="small grey extra" data-act="addTime" data-ms="300000" aria-label="Aggiungi 5 minuti">+5 MIN</button>
     </div>
+    <div id="liveMatches"></div>
     <button id="btnEnd" class="btn red push" data-act="finishMatch">FISCHIO FINALE (CHIUDI ORA)</button>
   </section>
 
@@ -355,13 +408,14 @@
   const BONUS = 1;       // punti extra a chi gioca in inferiorità numerica
   const ARCH_KEY = 'torneo-enea-archivio';
   const ARCH_MAX = 50;
+  const RUB_KEY = 'torneo-enea-rubrica';   // rubrica: elenco di tutti i nomi usati
 
   const fresh = () => ({
     v: 3,
     step: 1,
     returnStep: 1,
     rawNames: '',
-    settings: { teamSize: '2', min: '5', sec: '0', warn: '1', comp: '1' },
+    settings: { teamSize: '2', min: '5', sec: '0', warn: '1', comp: '1', bibOn: '1', bibs: 'arancione,blu,giallo,verde' },
     players: [],            // [{id, name, joined, start}]  joined = turno di ingresso, start = punti iniziali
     removed: [],            // giocatori tolti dalla lista: se tornano con lo stesso nome, recuperano i punti
     nextId: 1,
@@ -381,6 +435,8 @@
   let dialogHasInput = false;
   let toastTimer = null;
   let imgCache = null;      // {id, file} immagine della classifica finale già pronta
+  let rubrica = [];         // nomi della rubrica (MAIUSCOLO, ordinati)
+  let rubEdit = false;      // modalità "Gestisci rubrica"
   let archCurrent = null;   // torneo aperto nello storico
 
   function load() {
@@ -581,10 +637,167 @@
     state.rawNames = $('playerInput').value;
     state.settings = {
       teamSize: $('teamSize').value, min: $('timeMin').value, sec: $('timeSec').value,
-      warn: $('warnSound').checked ? '1' : '0', comp: $('compBonus').checked ? '1' : '0'
+      warn: $('warnSound').checked ? '1' : '0', comp: $('compBonus').checked ? '1' : '0',
+      bibOn: $('bibOn').checked ? '1' : '0', bibs: state.settings.bibs
     };
+    $('bibBox').style.display = state.settings.bibOn === '0' ? 'none' : '';
     save();
     updateSetupUI();
+  }
+
+  /* =========================================================
+     RUBRICA GIOCATORI
+     La lista di oggi resta il testo in #playerInput (fonte unica):
+     toccare un nome in rubrica lo aggiunge o lo toglie da quel testo.
+     ========================================================= */
+  const cleanName = (s) => String(s).toUpperCase().replace(/[\n,]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  function saveRubrica() {
+    rubrica = [...new Set(rubrica.map(cleanName).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+    try { localStorage.setItem(RUB_KEY, JSON.stringify(rubrica)); } catch (e) {}
+  }
+
+  // Alla prima apertura la rubrica si riempie con i nomi già usati (torneo in corso e tornei passati)
+  function loadRubrica() {
+    try {
+      const a = JSON.parse(localStorage.getItem(RUB_KEY) || 'null');
+      if (Array.isArray(a)) { rubrica = a; return; }
+    } catch (e) {}
+    rubrica = [
+      ...state.players.map(p => p.name), ...state.removed.map(p => p.name), ...parseNames(state.rawNames || ''),
+      ...loadArchive().flatMap(e => e.ranking.map(r => r.name))
+    ];
+    saveRubrica();
+  }
+
+  function addToRubrica(names) {
+    const before = rubrica.length;
+    rubrica = rubrica.concat(names);
+    saveRubrica();
+    return rubrica.length !== before;
+  }
+
+  const todayNames = () => parseNames($('playerInput').value);
+  function setToday(names) {
+    $('playerInput').value = names.join('\n');
+    persistForm();
+  }
+
+  function renderRubrica() {
+    const box = $('rubChips');
+    const q = cleanName($('rubSearch').value);
+    const sel = new Set(todayNames());
+    // anche i nomi scritti a mano e non ancora in rubrica compaiono (selezionati)
+    const all = [...new Set([...rubrica, ...sel])].sort((a, b) => a.localeCompare(b, 'it'));
+    const list = q ? all.filter(n => n.includes(q)) : all;
+    box.replaceChildren(...list.map(n => h('button', {
+      class: 'rub-chip' + (rubEdit ? ' edit' : ''), 'data-act': 'rubToggle', 'data-n': n,
+      'aria-pressed': sel.has(n) ? 'true' : 'false',
+      'aria-label': rubEdit ? 'Elimina ' + n + ' dalla rubrica' : n, text: n
+    })));
+    if (!all.length) box.append(h('p', { class: 'rub-empty', text: 'La rubrica è vuota: scrivi un nome qui sopra e premi + AGGIUNGI.' }));
+    else if (!list.length) box.append(h('p', { class: 'rub-empty', text: `Nessun giocatore trovato: premi + AGGIUNGI per creare ${q}.` }));
+    const exact = q && all.includes(q);
+    const add = $('rubAdd');
+    add.textContent = exact ? (sel.has(q) ? '✓ C\'È GIÀ' : '✓ SELEZIONA') : '+ AGGIUNGI';
+    add.disabled = !q || (exact && sel.has(q));
+    $('rubEditBtn').setAttribute('aria-pressed', rubEdit ? 'true' : 'false');
+    $('rubEditBtn').textContent = rubEdit ? '✓ Fine modifica' : '✏️ Gestisci rubrica';
+  }
+
+  // Tocco su un nome: seleziona/deseleziona (oppure elimina, in modalità gestione)
+  async function rubToggle(name) {
+    if (rubEdit) {
+      if (todayNames().includes(name)) { toast(`Togli prima ${name} dai giocatori di oggi`); return; }
+      const ok = await dialog({ title: 'Elimina dalla rubrica', message: `${name} non comparirà più nell'elenco. I tornei passati restano invariati.`, ok: 'ELIMINA', danger: true });
+      if (!ok) return;
+      rubrica = rubrica.filter(n => n !== name);
+      saveRubrica();
+      renderRubrica();
+      return;
+    }
+    const names = todayNames();
+    setToday(names.includes(name) ? names.filter(n => n !== name) : names.concat(name));
+    const s = $('rubSearch');
+    if (s.value) { s.value = ''; renderRubrica(); s.focus(); }
+  }
+
+  // Campo cerca/aggiungi: se il nome esiste lo seleziona, altrimenti lo crea e lo seleziona
+  function rubAddFromSearch() {
+    const s = $('rubSearch');
+    const name = cleanName(s.value);
+    if (!name) return;
+    const created = addToRubrica([name]);
+    const names = todayNames();
+    if (!names.includes(name)) setToday(names.concat(name));
+    s.value = '';
+    renderRubrica();
+    s.focus();
+    toast(created ? `${name} aggiunto alla rubrica` : `${name} selezionato`);
+  }
+
+  async function rubNone() {
+    if (!todayNames().length) return;
+    const ok = await dialog({ title: 'Deseleziona tutti', message: 'Svuota l\'elenco dei giocatori di oggi. La rubrica resta com\'è.', ok: 'SVUOTA' });
+    if (ok) setToday([]);
+  }
+
+  /* =========================================================
+     PETTORINE: colore per ogni squadra del turno
+     ========================================================= */
+  const BIBS = {
+    arancione: { label: 'ARANCIONI', name: 'Arancione', color: '#ff8c1a' },
+    blu:       { label: 'BLU',       name: 'Blu',       color: '#1e6fff' },
+    giallo:    { label: 'GIALLI',    name: 'Giallo',    color: '#ffd400' },
+    verde:     { label: 'VERDI',     name: 'Verde',     color: '#22c55e' },
+    rosso:     { label: 'ROSSI',     name: 'Rosso',     color: '#ef233c' },
+    bianco:    { label: 'BIANCHI',   name: 'Bianco',    color: '#f5f5f5' },
+    nero:      { label: 'NERI',      name: 'Nero',      color: '#111111' },
+    viola:     { label: 'VIOLA',     name: 'Viola',     color: '#8b5cf6' },
+    senza:     { label: 'SENZA PETTORINA', name: 'Senza pettorina', color: null }
+  };
+  const BIB_ORDER = Object.keys(BIBS);
+  const bibList = () => String(state.settings.bibs || '').split(',').filter(k => BIBS[k]);
+
+  // Colore della squadra in posizione i del turno. Squadre consecutive (stessa partita)
+  // hanno sempre colori diversi; se i colori sono meno delle squadre si ripetono tra partite diverse.
+  function bibOf(i) {
+    if (state.settings.bibOn === '0') return null;
+    const l = bibList();
+    return l.length >= 2 ? BIBS[l[i % l.length]] : null;
+  }
+
+  function bibBadge(b) {
+    if (!b) return null;
+    return h('span', { class: 'bib', 'data-none': b.color ? null : '1' },
+      h('i', { class: 'bib-dot', style: b.color ? `--c:${b.color}` : null }), b.label);
+  }
+
+  // Nome della squadra per i messaggi: "ARANCIONI (ANNA + LUCA)" oppure solo i nomi
+  function teamName(i) {
+    const t = state.teams[i] || [], b = bibOf(i);
+    return b ? `${b.label} (${teamLabel(t)})` : teamLabel(t);
+  }
+
+  function renderBibChips() {
+    const sel = bibList();
+    $('bibChips').replaceChildren(...BIB_ORDER.map(k => {
+      const b = BIBS[k];
+      return h('button', { class: 'bib-chip', 'data-act': 'bib', 'data-k': k, 'aria-pressed': sel.includes(k) ? 'true' : 'false', 'data-none': b.color ? null : '1' },
+        h('i', { class: 'bib-dot', style: b.color ? `--c:${b.color}` : null }), b.name);
+    }));
+    $('bibBox').style.display = state.settings.bibOn === '0' ? 'none' : '';
+  }
+
+  function toggleBib(k) {
+    let l = bibList();
+    if (l.includes(k)) {
+      if (l.length <= 2) { toast('Servono almeno 2 colori'); return; }
+      l = l.filter(x => x !== k);
+    } else l.push(k);
+    state.settings.bibs = BIB_ORDER.filter(x => l.includes(x)).join(',');
+    save();
+    renderBibChips();
   }
 
   function findDuplicates(names) {
@@ -609,6 +822,7 @@
       refreshSetupButtons();
     }
     $('btnArchive').style.display = loadArchive().length ? 'block' : 'none';
+    renderRubrica();
   }
 
   // Legge e valida le impostazioni; ritorna null (con messaggio) se non valide
@@ -658,6 +872,7 @@
     state.removed = state.removed.filter(p => !keep.has(p.id)).concat(gone);
     state.players = next;
     save();
+    addToRubrica(names);     // chi gioca entra sempre in rubrica
     return true;
   }
 
@@ -759,12 +974,19 @@
       const diff = t2 && t1.length !== t2.length;
       if (diff) uneven = true;
       const bon = matchBonus(t1, t2);
-      box.append(h('div', { class: 'match' },
+      const b1 = bibOf(i), b2 = bibOf(i + 1);
+      box.append(h('div', { class: 'match', style: b1 && b1.color ? `border-left-color:${b1.color}` : null },
+        b1 ? h('div', {}, bibBadge(b1)) : null,
         h('div', { class: 'a', text: teamLabel(t1) }),
         h('span', { class: 'vs', text: 'VS' }),
-        h('div', { class: 'b', text: teamLabel(t2 || []) }),
+        b2 ? h('div', {}, bibBadge(b2)) : null,
+        h('div', { class: b2 ? 'a' : 'b', text: teamLabel(t2 || []) }),
         diff ? h('small', { text: `⚠️ ${t1.length} contro ${t2.length}` + (bon ? ` · +${BONUS} pt a chi è in ${Math.min(t1.length, t2.length)}` : '') }) : null
       ));
+    }
+    const nb = bibList().length;
+    if (bibOf(0) && state.teams.length > nb) {
+      box.append(h('p', { class: 'hint', text: `Hai ${nb} colori per ${state.teams.length} squadre: i colori si ripetono, ma mai nella stessa partita.` }));
     }
     const warn = $('previewWarn');
     if (uneven) {
@@ -787,8 +1009,19 @@
     whistle();
     requestWake();
     renderTimerUI();
+    renderLiveMatches();
     startTick();
     showStep(3);
+  }
+
+  // Chi gioca contro chi, sotto il timer (con i colori delle pettorine)
+  function renderLiveMatches() {
+    const box = $('liveMatches');
+    box.replaceChildren();
+    for (let i = 0; i + 1 < state.teams.length; i += 2) {
+      const side = (k) => h('div', {}, bibBadge(bibOf(k)), h('div', { class: 'live-names', text: teamLabel(state.teams[k]) }));
+      box.append(h('div', { class: 'live-match' }, side(i), h('span', { class: 'vs', text: 'VS' }), side(i + 1)));
+    }
   }
 
   function startTick() { stopTick(); tickId = setInterval(tick, 250); }
@@ -978,6 +1211,8 @@
     if (name === p.name) return;
     if (state.players.some(x => x.id !== id && x.name === name)) { toast(name + ' è già in lista'); return; }
     state.removed = state.removed.filter(x => x.name !== name);
+    rubrica = rubrica.filter(n => n !== p.name).concat(name);
+    saveRubrica();
     p.name = name;
     state.rawNames = state.players.map(x => x.name).join('\n');
     $('playerInput').value = state.rawNames;
@@ -1005,12 +1240,14 @@
     for (let m = 0; m < matchCount(); m++) {
       const t1 = state.teams[m * 2], t2 = state.teams[m * 2 + 1];
       const names = (t) => t.filter(id => state.players.some(p => p.id === id)).map(id => h('div', { text: nameOf(id) }));
+      const top = (b) => !b ? null : b.color ? `border-top:6px solid ${b.color}` : 'border-top:6px dashed #888';
+      const b1 = bibOf(m * 2), b2 = bibOf(m * 2 + 1);
       box.append(h('div', { class: 'score-row' },
-        h('button', { class: 'team-btn', id: `m${m}a`, 'data-act': 'pick', 'data-m': m, 'data-side': 'a' },
-          h('div', { class: 'team-names' }, names(t1)), h('div', { class: 'result-label', id: `l${m}a` })),
+        h('button', { class: 'team-btn', id: `m${m}a`, 'data-act': 'pick', 'data-m': m, 'data-side': 'a', style: top(b1) },
+          bibBadge(b1), h('div', { class: 'team-names' }, names(t1)), h('div', { class: 'result-label', id: `l${m}a` })),
         h('div', { class: 'vs-mid', text: 'VS' }),
-        h('button', { class: 'team-btn', id: `m${m}b`, 'data-act': 'pick', 'data-m': m, 'data-side': 'b' },
-          h('div', { class: 'team-names' }, names(t2)), h('div', { class: 'result-label', id: `l${m}b` }))
+        h('button', { class: 'team-btn', id: `m${m}b`, 'data-act': 'pick', 'data-m': m, 'data-side': 'b', style: top(b2) },
+          bibBadge(b2), h('div', { class: 'team-names' }, names(t2)), h('div', { class: 'result-label', id: `l${m}b` }))
       ));
       updateScoreLabels(m);
     }
@@ -1057,9 +1294,10 @@
       const match = { t1: t1.slice(), t2: t2.slice(), r };
       if (bonus) match.bonus = bonus;
       matches.push(match);
-      const esito = r === 'D' ? 'pareggio' : r === '1' ? 'vince ' + teamLabel(t1) : 'vince ' + teamLabel(t2);
-      const bonusTxt = bonus ? `\n    +${BONUS} pt a ${teamLabel(bonus === '1' ? t1 : t2)} (inferiorità)` : '';
-      summary.push(`${m + 1}) ${teamLabel(t1)} vs ${teamLabel(t2)}\n    → ${esito}${bonusTxt}`);
+      const n1 = teamName(m * 2), n2 = teamName(m * 2 + 1);
+      const esito = r === 'D' ? 'pareggio' : 'vince ' + (r === '1' ? n1 : n2);
+      const bonusTxt = bonus ? `\n    +${BONUS} pt a ${bonus === '1' ? n1 : n2} (inferiorità)` : '';
+      summary.push(`${m + 1}) ${n1} vs ${n2}\n    → ${esito}${bonusTxt}`);
     }
     const ok = await dialog({ title: 'Conferma risultati', message: summary.join('\n'), ok: 'SALVA' });
     if (!ok) return;
@@ -1471,6 +1709,11 @@
     showRanking: () => showLiveRanking(true),
     concludeFromModal: () => { closeLive(); closeTournament(); },
     coinToss: resolveTiesWithCoin,
+    bib: (el) => toggleBib(el.dataset.k),
+    rubToggle: (el) => rubToggle(el.dataset.n),
+    rubAdd: rubAddFromSearch,
+    rubNone,
+    rubEdit: () => { rubEdit = !rubEdit; renderRubrica(); },
     addTime: (el) => addTime(Number(el.dataset.ms)),
     undo: undoLastRound, reset: resetAll, backToTournament,
     pick: (el) => pick(Number(el.dataset.m), el.dataset.side),
@@ -1505,6 +1748,8 @@
   $('dlgOk').addEventListener('click', () => closeDialog(true));
   $('dlgCancel').addEventListener('click', () => closeDialog(false));
   $('dlgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); closeDialog(true); } });
+  $('rubSearch').addEventListener('input', renderRubrica);
+  $('rubSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); rubAddFromSearch(); } });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
@@ -1512,7 +1757,7 @@
     else { closeLive(); closeArch(); }
   });
 
-  ['playerInput', 'teamSize', 'timeMin', 'timeSec', 'warnSound', 'compBonus'].forEach(id => $(id).addEventListener('input', persistForm));
+  ['playerInput', 'teamSize', 'timeMin', 'timeSec', 'warnSound', 'compBonus', 'bibOn'].forEach(id => $(id).addEventListener('input', persistForm));
 
   // Ritorno in primo piano: ricalcola il timer e riprendi il wake lock
   document.addEventListener('visibilitychange', () => {
@@ -1530,9 +1775,12 @@
     $('timeSec').value = state.settings.sec;
     $('warnSound').checked = state.settings.warn !== '0';
     $('compBonus').checked = state.settings.comp !== '0';
+    $('bibOn').checked = state.settings.bibOn !== '0';
+    renderBibChips();
   }
 
   function init() {
+    loadRubrica();
     fillForm();
     updateSetupUI();
     if (state.closedId) {
@@ -1546,7 +1794,7 @@
     if (n === 2 && state.teams.length) renderPreview();
     if (n === 3) {
       if (state.timer.status === 'idle') state.step = 2;
-      else { renderTimerUI(); if (state.timer.status === 'running') { startTick(); requestWake(); tick(); } }
+      else { renderTimerUI(); renderLiveMatches(); if (state.timer.status === 'running') { startTick(); requestWake(); tick(); } }
     }
     if (n === 4) { if (state.teams.length) buildScoreUI(); else state.step = 1; }
     if (n === 5) renderRanking();
