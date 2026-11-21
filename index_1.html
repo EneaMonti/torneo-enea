@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#000000">
+  <title>Torneo Enea</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-title" content="Torneo">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --neon: #39ff14;
+      --bg: #050505;
+      --panel: #111;
+      --border: #333;
+      --danger: #ff003c;
+      --blue: #2196F3;
+      --muted: #9a9a9a;
+      --active-bg: rgba(57, 255, 20, 0.2);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body, button, .team-btn { user-select: none; -webkit-user-select: none; }
+    input, textarea { user-select: text; -webkit-user-select: text; }
+
+    body {
+      font-family: 'Roboto', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--neon);
+      margin: 0;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1, h2, h3, .anton { font-family: 'Anton', Impact, 'Arial Narrow', sans-serif; letter-spacing: 1px; font-weight: 400; }
+
+    .app { width: 100%; max-width: 600px; background: var(--panel); border-left: 1px solid var(--border); border-right: 1px solid var(--border); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header { background: #000; border-bottom: 2px solid var(--neon); padding: 15px; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 1.5rem; text-transform: uppercase; color: #fff; }
+    .progress { background: #222; height: 4px; }
+    .progress > div { height: 100%; background: var(--neon); width: 0; transition: width .3s ease; }
+
+    .step { display: none; padding: 20px; padding-bottom: 30px; flex-grow: 1; flex-direction: column; animation: fadeIn .35s ease; }
+    .step.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    h2.title { color: #fff; margin: 0 0 8px; }
+    label { display: block; margin-top: 20px; color: var(--muted); text-transform: uppercase; font-size: .9rem; font-weight: 700; }
+    textarea, input { width: 100%; padding: 15px; margin-top: 8px; background: #000; border: 1px solid #444; color: #fff; font-size: 1.1rem; font-family: inherit; border-radius: 4px; }
+    textarea#playerInput { text-transform: uppercase; }
+    textarea:focus, input:focus { outline: 2px solid var(--neon); outline-offset: 0; border-color: var(--neon); }
+    .time-inputs { display: flex; gap: 10px; }
+    .time-inputs > div { flex: 1; }
+    .input-header { display: flex; justify-content: space-between; align-items: flex-end; }
+    .counter { color: var(--neon); font-size: .9rem; font-weight: 700; }
+
+    .warning { display: none; background: rgba(255,0,60,.1); border: 1px solid var(--danger); color: #ff6b8a; padding: 10px; margin-top: 10px; font-size: .9rem; border-radius: 4px; }
+    .info { background: rgba(255,200,0,.08); border: 1px solid #b38f00; color: #ffd24a; padding: 10px; margin-bottom: 12px; font-size: .9rem; border-radius: 4px; }
+
+    button { font-family: inherit; }
+    .btn { width: 100%; padding: 18px; background: var(--neon); color: #000; border: none; font-size: 1.3rem; text-transform: uppercase; font-family: 'Anton', Impact, sans-serif; letter-spacing: 1px; cursor: pointer; border-radius: 4px; margin-top: 12px; }
+    .btn:active { filter: brightness(.8); }
+    .btn:disabled { background: #333; color: #777; cursor: not-allowed; }
+    .btn.red { background: var(--danger); color: #fff; }
+    .btn.blue { background: var(--blue); color: #fff; }
+    .btn.ghost { background: transparent; border: 1px solid #555; color: #ddd; font-size: 1rem; padding: 14px; }
+    .btn.push { margin-top: auto; }
+    .stick { position: sticky; bottom: 10px; box-shadow: 0 -6px 20px rgba(0,0,0,.6); }
+
+    .small { padding: 8px 12px; font-size: .8rem; background: transparent; border: 1px solid var(--danger); color: #ff6b8a; border-radius: 4px; text-transform: uppercase; cursor: pointer; }
+    .small.blue { border-color: var(--blue); color: #64b5f6; }
+    .small.grey { border-color: #666; color: #ccc; }
+
+    .match { background: #1a1a1a; border-left: 4px solid var(--neon); padding: 15px; margin-bottom: 10px; text-align: center; border-radius: 0 4px 4px 0; }
+    .match .a { font-weight: 700; color: #fff; }
+    .match .b { font-weight: 700; color: #ff6b8a; }
+    .vs { background: #333; color: var(--neon); padding: 2px 8px; border-radius: 4px; font-size: .8rem; margin: 5px 0; display: inline-block; }
+    .match small { display: block; color: #ffd24a; margin-top: 6px; }
+
+    #timerDisplay { font-size: 6rem; text-align: center; margin: 30px 0; font-family: 'Anton', Impact, sans-serif; color: #fff; text-shadow: 0 0 10px rgba(57,255,20,.3); font-variant-numeric: tabular-nums; }
+    #timerDisplay.paused { color: #666; text-shadow: none; }
+    #timerDisplay.pulse { animation: pulse 1s infinite; color: var(--danger); }
+    @keyframes pulse { 50% { transform: scale(1.05); } }
+    .timer-actions { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .timer-actions .small { padding: 10px 20px; font-size: 1rem; }
+
+    .score-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
+    .team-btn { flex: 1; background: #1a1a1a; border: 2px solid #333; color: #bbb; padding: 15px 5px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: .2s; font-size: 1rem; }
+    .team-btn.selected { border-color: var(--neon); background: var(--active-bg); color: #fff; }
+    .team-names { font-size: .95rem; font-weight: 700; line-height: 1.4; }
+    .result-label { margin-top: 6px; font-size: .75rem; text-transform: uppercase; }
+    .vs-mid { display: flex; align-items: center; font-weight: 700; color: #777; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; color: var(--muted); padding: 10px 6px; border-bottom: 1px solid #333; font-size: .8rem; text-transform: uppercase; }
+    td { padding: 10px 6px; border-bottom: 1px solid #222; font-size: 1.05rem; color: #fff; vertical-align: middle; }
+    tr.first td { color: var(--neon); font-weight: 700; }
+    td .stats { display: block; color: var(--muted); font-size: .75rem; font-weight: 400; margin-top: 2px; }
+    .score-cell { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .score-cell b { min-width: 34px; text-align: center; }
+    .adj { background: #222; border: 1px solid #444; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-weight: 700; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .adj.minus { color: var(--danger); border-color: var(--danger); }
+    .adj.plus { color: var(--neon); border-color: var(--neon); }
+    .table-box { overflow-y: auto; border: 1px solid #333; border-radius: 4px; }
+
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; padding: 20px; }
+    .overlay.open { display: flex; }
+    .modal-box { background: #111; border: 2px solid var(--neon); width: 100%; max-width: 500px; max-height: 75vh; overflow-y: auto; padding: 15px; border-radius: 8px; box-shadow: 0 0 20px rgba(57,255,20,.2); }
+    .dialog-box { background: #111; border: 2px solid var(--neon); width: 100%; max-width: 420px; padding: 20px; border-radius: 8px; }
+    .dialog-box h3 { color: #fff; margin: 0 0 10px; font-size: 1.4rem; }
+    .dialog-box p { color: #ddd; white-space: pre-line; margin: 0 0 18px; line-height: 1.45; }
+    .dialog-actions { display: flex; gap: 10px; }
+    .dialog-actions .btn { margin: 0; font-size: 1.1rem; padding: 14px; }
+    #dialog { z-index: 1100; }
+    .close-btn { margin-top: 18px; padding: 14px 40px; background: #fff; color: #000; border: none; font-family: 'Anton', Impact, sans-serif; font-size: 1.2rem; cursor: pointer; border-radius: 4px; }
+
+    #toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); background: #fff; color: #000; padding: 12px 18px; border-radius: 6px; font-weight: 700; opacity: 0; pointer-events: none; transition: .25s; z-index: 1200; max-width: 90%; text-align: center; }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .check { display: flex; align-items: center; gap: 12px; margin-top: 20px; color: #ddd; font-size: 1rem; text-transform: none; font-weight: 400; cursor: pointer; }
+    .check input { width: 24px; height: 24px; margin: 0; padding: 0; accent-color: var(--neon); flex-shrink: 0; }
+    .timer-actions .small:disabled { opacity: .4; cursor: not-allowed; }
+    .danger-zone { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #444; }
+    .hint { color: var(--muted); font-size: .85rem; margin: 4px 0 10px; }
+    .bonus-tag { color: #ffd24a; font-weight: 700; }
+
+    .name-btn { background: none; border: none; color: inherit; font: inherit; padding: 0; text-align: left; cursor: pointer; }
+    .name-btn .pen { font-size: .75rem; opacity: .55; margin-left: 4px; }
+    #dlgInput { display: none; margin: 0 0 18px; text-transform: uppercase; }
+
+    .btn.outline-red { background: transparent; border: 1px solid var(--danger); color: #ff6b8a; font-size: 1rem; padding: 14px; }
+
+    .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 10px 0 20px; }
+    .pod-col { flex: 1; max-width: 170px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .pod-names { color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.3; margin-bottom: 4px; word-break: break-word; }
+    .pod-pts { color: var(--neon); font-weight: 700; font-size: .9rem; margin-bottom: 6px; }
+    .pod-block { width: 100%; border-radius: 6px 6px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 8px; color: #111; font-family: 'Anton', Impact, sans-serif; font-size: 2rem; }
+    .pod-block span { font-size: 1.6rem; line-height: 1; }
+    .p1 .pod-block { height: 130px; background: linear-gradient(#f5d76e, #c9a227); }
+    .p2 .pod-block { height: 95px; background: linear-gradient(#e6e6e6, #a9a9a9); }
+    .p3 .pod-block { height: 70px; background: linear-gradient(#e0a060, #a8642a); }
+    .pod-col.empty { visibility: hidden; }
+
+    .arch-item { width: 100%; text-align: left; background: #1a1a1a; border: 1px solid #333; border-radius: 6px; padding: 12px; margin-bottom: 8px; color: #fff; cursor: pointer; font-size: 1rem; }
+    .arch-item small { display: block; color: var(--muted); margin-top: 4px; font-size: .8rem; }
+    .arch-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .arch-actions .small { flex: 1; padding: 12px 8px; }
+
+    #liveTable td { font-size: 1.15rem; }
+    #liveConclude { max-width: 500px; margin-top: 14px; background: #111; }
+
+    .tie-box { background: rgba(212,175,55,.1); border: 1px solid #b8901c; border-radius: 6px; padding: 12px; margin-bottom: 14px; color: #f5d76e; font-size: .95rem; text-align: center; }
+    .tie-box .btn { margin-top: 10px; background: #d4af37; color: #1a1300; }
+
+    #coinModal .modal-box { text-align: center; border-color: #d4af37; box-shadow: 0 0 20px rgba(212,175,55,.25); }
+    #coinTitle { color: #fff; margin: 0 0 6px; font-size: 1.6rem; }
+    #coinInfo { color: #ddd; white-space: pre-line; line-height: 1.45; margin: 0 0 6px; }
+    .coin-wrap { perspective: 900px; display: flex; justify-content: center; margin: 22px 0; }
+    .coin { width: 160px; height: 160px; position: relative; transform-style: preserve-3d; transition: transform 1.9s cubic-bezier(.15,.75,.25,1); }
+    .coin-face { position: absolute; inset: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: radial-gradient(circle at 35% 30%, #fff3b0, #d4af37 55%, #9c7a16); border: 6px solid #b8901c; color: #4a3700; font-family: 'Anton', Impact, sans-serif; font-size: 1.7rem; box-shadow: inset 0 0 0 5px rgba(255,255,255,.25), 0 6px 18px rgba(0,0,0,.5); }
+    .coin-face small { font-family: 'Roboto', Arial, sans-serif; font-weight: 700; font-size: .75rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+    .coin-back { transform: rotateY(180deg); }
+    .coin-chips { display: flex; flex-wrap: wrap; justify-content: center; margin: 18px 0; }
+    .coin-chip { padding: 10px 14px; border: 2px solid #333; border-radius: 8px; margin: 5px; color: #fff; font-weight: 700; transition: background .08s, border-color .08s; }
+    .coin-chip.on { border-color: #d4af37; background: rgba(212,175,55,.3); }
+    #coinResult { min-height: 1.6em; color: var(--neon); font-weight: 700; font-size: 1.15rem; margin: 4px 0 6px; }
+    #coinBtn { background: #d4af37; color: #1a1300; }
+
+    /* Gruppi e backup */
+    .group-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; background: #0a0a0a; border: none; border-bottom: 1px solid #222; padding: 11px 15px; color: #ccc; font-size: .9rem; cursor: pointer; text-align: left; }
+    .group-bar b { color: #fff; text-transform: uppercase; }
+    .group-change { color: #64b5f6; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+    .group-item.cur { border-color: var(--neon); }
+    .group-item .in-use { color: var(--neon); font-size: .75rem; font-weight: 700; margin-left: 6px; }
+    .group-sec { color: var(--muted); font-size: .8rem; font-weight: 700; text-transform: uppercase; margin: 18px 0 8px; }
+    #groupBody .btn { margin-top: 8px; font-size: 1rem; padding: 13px; }
+
+    /* Rubrica giocatori */
+    .rub-bar { display: flex; gap: 8px; margin-top: 8px; }
+    .rub-bar input { margin-top: 0; flex: 1; min-width: 0; text-transform: uppercase; }
+    .rub-bar .small { flex: none; padding: 0 14px; font-size: .85rem; }
+    .rub-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; max-height: 320px; overflow-y: auto; }
+    .rub-chip { padding: 10px 14px; border: 2px solid #333; border-radius: 999px; background: #111; color: #bbb; font-weight: 700; font-size: .95rem; cursor: pointer; }
+    .rub-chip[aria-pressed="true"] { border-color: var(--neon); background: rgba(57,255,20,.15); color: #fff; }
+    .rub-chip[aria-pressed="true"]::before { content: '✓ '; color: var(--neon); }
+    .rub-chip.edit { border-style: dashed; }
+    .rub-chip.edit::after { content: ' ✕'; color: var(--danger); }
+    .rub-empty { color: var(--muted); font-size: .9rem; margin: 4px 0; }
+    .rub-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+    #rubEditBtn[aria-pressed="true"] { border-color: var(--danger); color: #ff6b8a; }
+    details summary { color: var(--muted); cursor: pointer; margin-top: 16px; font-size: .85rem; text-transform: uppercase; font-weight: 700; }
+
+    /* Pettorine */
+    .bib { display: inline-flex; align-items: center; gap: 6px; font-size: .75rem; font-weight: 700; letter-spacing: .5px; padding: 3px 9px; border-radius: 999px; background: #222; color: #eee; margin: 0 0 5px; }
+    .bib-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 1px rgba(255,255,255,.55); display: inline-block; flex-shrink: 0; }
+    .bib[data-none] .bib-dot, .bib-chip[data-none] .bib-dot { background: transparent; border: 2px dashed #888; box-shadow: none; }
+    #bibBox { margin-top: 6px; }
+    .bib-chips { display: flex; flex-wrap: wrap; margin: 0 -4px; }
+    .bib-chip { display: inline-flex; align-items: center; gap: 7px; padding: 9px 13px; border: 2px solid #333; border-radius: 999px; background: #111; color: #aaa; margin: 4px; font-weight: 700; font-size: .85rem; cursor: pointer; }
+    .bib-chip[aria-pressed="true"] { border-color: var(--neon); color: #fff; background: rgba(57,255,20,.12); }
+    .match .bib { margin-top: 2px; }
+    #liveMatches { margin-bottom: 18px; }
+    .live-match { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #1a1a1a; border-radius: 6px; padding: 10px; margin-bottom: 8px; color: #fff; font-size: .9rem; }
+    .live-match > div { flex: 1; min-width: 0; }
+    .live-match > div:last-child { text-align: right; }
+    .live-match .vs { flex: none; }
+    .live-names { font-weight: 700; word-break: break-word; }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <div class="logo anton">TORNEO<span style="color:var(--neon)">.ENEA</span></div>
+    <button id="btnSettings" class="small blue" data-act="openSettings" aria-label="Apri impostazioni e giocatori">⚙️ Modifica</button>
+  </header>
+  <div class="progress"><div id="progressBar"></div></div>
+  <button id="groupBar" class="group-bar" data-act="openGroups" aria-label="Cambia gruppo o fai un backup">
+    <span>👥 <b id="groupName"></b></span><span class="group-change">GRUPPI E BACKUP ▾</span>
+  </button>
+
+  <!-- STEP 1 -->
+  <section id="step-1" class="step active">
+    <h2 class="title anton">CONFIGURAZIONE</h2>
+
+    <div class="input-header">
+      <label for="rubSearch" style="margin-top:0">Giocatori di oggi</label>
+      <span class="counter">SELEZIONATI: <span id="playerCount">0</span></span>
+    </div>
+    <div class="rub-bar">
+      <input id="rubSearch" type="text" placeholder="Cerca o nuovo nome" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="done">
+      <button id="rubAdd" class="small blue" data-act="rubAdd" aria-label="Aggiungi giocatore">+ AGGIUNGI</button>
+    </div>
+    <div id="rubChips" class="rub-chips" aria-label="Rubrica giocatori"></div>
+    <div class="rub-tools">
+      <button class="small grey" data-act="rubNone">Deseleziona tutti</button>
+      <button id="rubEditBtn" class="small grey" data-act="rubEdit">✏️ Gestisci rubrica</button>
+    </div>
+    <details id="listDetails">
+      <summary>Scrivi o incolla la lista</summary>
+      <textarea id="playerInput" rows="6" placeholder="UN NOME PER RIGA, OPPURE SEPARATI DA VIRGOLA" autocapitalize="characters" autocomplete="off" spellcheck="false" aria-label="Lista giocatori di oggi"></textarea>
+    </details>
+    <div id="dupAlert" class="warning" role="alert"></div>
+    <p class="hint">Per cambiare nome a un giocatore senza perdere i punti, tocca il suo nome in classifica.</p>
+
+    <label for="teamSize">Giocatori per squadra</label>
+    <input type="number" id="teamSize" min="1" max="11" inputmode="numeric">
+
+    <label>Durata partita</label>
+    <div class="time-inputs">
+      <div><input type="number" id="timeMin" min="0" max="180" inputmode="numeric" placeholder="Min" aria-label="Minuti"></div>
+      <div><input type="number" id="timeSec" min="0" max="59" inputmode="numeric" placeholder="Sec" aria-label="Secondi"></div>
+    </div>
+
+    <label class="check" for="warnSound">
+      <input type="checkbox" id="warnSound">
+      <span>Avviso sonoro quando manca 1 minuto</span>
+    </label>
+
+    <label class="check" for="compBonus">
+      <input type="checkbox" id="compBonus">
+      <span>+1 punto a chi gioca in inferiorità numerica</span>
+    </label>
+
+    <label class="check" for="bibOn">
+      <input type="checkbox" id="bibOn">
+      <span>Assegna il colore della pettorina alle squadre</span>
+    </label>
+    <div id="bibBox">
+      <p class="hint">Tocca i colori che hai a disposizione (almeno 2):</p>
+      <div id="bibChips" class="bib-chips"></div>
+    </div>
+
+    <button id="btnGenerate" class="btn stick" data-act="generate">CREA SQUADRE</button>
+    <button id="btnBack" class="btn blue" style="display:none" data-act="backToTournament">SALVA E TORNA AL TORNEO</button>
+    <button id="btnArchive" class="btn ghost" style="display:none" data-act="openArchive">📚 TORNEI PASSATI</button>
+
+    <div id="dangerZone" class="danger-zone">
+      <button class="small" data-act="reset">Azzera tutto il torneo</button>
+      <p class="hint">Cancella giocatori, punti e storico. Non si può annullare.</p>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="step-2" class="step">
+    <h2 class="title anton">PROSSIME SFIDE</h2>
+    <div id="previewWarn" class="info" style="display:none"></div>
+    <div id="matchesList"></div>
+    <button class="btn ghost" data-act="reroll">🔀 RIMESCOLA</button>
+    <button class="btn stick" data-act="startMatch">AVVIA PARTITA</button>
+  </section>
+
+  <!-- STEP 3 -->
+  <section id="step-3" class="step">
+    <h2 class="title anton" style="text-align:center;color:#888">MATCH IN CORSO</h2>
+    <div id="timerDisplay" role="timer" aria-live="off">00:00</div>
+    <div class="timer-actions">
+      <button class="small grey" id="btnPause" data-act="togglePause">PAUSA ||</button>
+      <button class="small blue" data-act="liveRanking">🏆 CLASSIFICA LIVE</button>
+    </div>
+    <div class="timer-actions">
+      <button class="small grey extra" data-act="addTime" data-ms="30000" aria-label="Aggiungi 30 secondi">+30 SEC</button>
+      <button class="small grey extra" data-act="addTime" data-ms="60000" aria-label="Aggiungi 1 minuto">+1 MIN</button>
+      <button class="small grey extra" data-act="addTime" data-ms="300000" aria-label="Aggiungi 5 minuti">+5 MIN</button>
+    </div>
+    <div id="liveMatches"></div>
+    <button id="btnEnd" class="btn red push" data-act="finishMatch">FISCHIO FINALE (CHIUDI ORA)</button>
+  </section>
+
+  <!-- STEP 4 -->
+  <section id="step-4" class="step">
+    <h2 class="title anton">CHI HA VINTO?</h2>
+    <p class="hint">Tocca la squadra vincente. Tocca entrambe per il pareggio.</p>
+    <div id="scoringList" style="margin-top:14px"></div>
+    <button class="btn stick" data-act="saveScores">SALVA E CLASSIFICA</button>
+  </section>
+
+  <!-- STEP 5 -->
+  <section id="step-5" class="step">
+    <h2 class="title anton">CLASSIFICA</h2>
+    <p class="hint">Usa + e − per correggere i punti, poi premi «Riordina».</p>
+    <button id="btnApplyAdj" class="btn blue" style="display:none;margin:0 0 12px;font-size:1.1rem;padding:14px" data-act="applyAdj">RIORDINA CLASSIFICA</button>
+    <div class="table-box">
+      <table id="rankingTable">
+        <thead><tr><th style="width:16%">#</th><th>Giocatore</th><th style="width:38%;text-align:right">PT</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button class="btn ghost" data-act="showRanking">🏆 MOSTRA CLASSIFICA</button>
+    <button id="btnUndo" class="btn ghost" data-act="undo">↩️ ANNULLA ULTIMO TURNO</button>
+    <button id="btnClose" class="btn outline-red" data-act="closeTournament">🏁 CONCLUDI TORNEO</button>
+    <button class="btn stick" data-act="nextRound">PROSSIMO TURNO</button>
+  </section>
+
+  <!-- STEP 6: FINE TORNEO -->
+  <section id="step-6" class="step">
+    <h2 class="title anton" style="text-align:center">🏆 CLASSIFICA FINALE</h2>
+    <p id="finalInfo" class="hint" style="text-align:center"></p>
+    <div id="tieBox" class="tie-box" style="display:none">
+      <div id="tieText"></div>
+      <button class="btn" data-act="coinToss">🪙 SPAREGGIO CON LA MONETA</button>
+    </div>
+    <div id="podium"></div>
+    <div id="finalList" class="table-box"></div>
+    <button class="btn" data-act="shareImage">📷 CONDIVIDI IMMAGINE</button>
+    <button class="btn ghost" data-act="shareFinalText">📤 CONDIVIDI COME TESTO</button>
+    <button class="btn blue" data-act="newSame">NUOVO TORNEO, STESSI GIOCATORI</button>
+    <button class="btn ghost" data-act="newEmpty">NUOVO TORNEO DA ZERO</button>
+    <button class="small grey" style="margin-top:22px;align-self:center" data-act="reopen">↩️ Riapri questo torneo</button>
+  </section>
+</div>
+
+<!-- GRUPPI E BACKUP -->
+<div id="groupModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="groupTitle">
+  <h2 id="groupTitle" class="anton" style="color:#fff;margin:0 0 12px">GRUPPI</h2>
+  <div id="groupBody" class="modal-box"></div>
+  <button class="close-btn" data-act="closeGroups">CHIUDI ✕</button>
+</div>
+<input id="importFile" type="file" accept=".json,application/json" hidden>
+
+<!-- TORNEI PASSATI -->
+<div id="archModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="archTitle">
+  <h2 id="archTitle" class="anton" style="color:#fff;margin:0 0 12px">TORNEI PASSATI</h2>
+  <div id="archBody" class="modal-box"></div>
+  <button class="close-btn" data-act="closeArch">CHIUDI ✕</button>
+</div>
+
+<!-- CLASSIFICA LIVE -->
+<div id="liveModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="liveTitle">
+  <h2 id="liveTitle" class="anton" style="color:#fff;margin:0 0 12px">CLASSIFICA PARZIALE</h2>
+  <div class="modal-box">
+    <table id="liveTable">
+      <thead><tr><th>Pos</th><th>Giocatore</th><th style="text-align:right">Punti</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <button id="liveConclude" class="btn outline-red" data-act="concludeFromModal" style="display:none">🏁 CONCLUDI TORNEO</button>
+  <button class="close-btn" data-act="closeLive">CHIUDI ✕</button>
+</div>
+
+<!-- SPAREGGIO CON MONETA -->
+<div id="coinModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="coinTitle">
+  <div class="modal-box">
+    <h3 id="coinTitle" class="anton"></h3>
+    <p id="coinInfo"></p>
+    <div id="coinStage"></div>
+    <div id="coinResult" aria-live="polite"></div>
+    <button id="coinBtn" class="btn">🪙 LANCIA</button>
+  </div>
+</div>
+
+<!-- DIALOG -->
+<div id="dialog" class="overlay" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+  <div class="dialog-box">
+    <h3 id="dlgTitle" class="anton"></h3>
+    <p id="dlgMsg"></p>
+    <input id="dlgInput" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Valore">
+    <div class="dialog-actions">
+      <button id="dlgCancel" class="btn ghost">ANNULLA</button>
+      <button id="dlgOk" class="btn">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* =========================================================
+     COSTANTI E STATO
+     ========================================================= */
+  /* GRUPPI: ogni gruppo ha le sue chiavi in localStorage (stato, storico, rubrica).
+     Il gruppo 'default' usa le chiavi storiche senza suffisso, così i dati esistenti
+     diventano il primo gruppo senza bisogno di spostarli. Cambiare gruppo ricarica la pagina. */
+  const BASE = { state: 'torneo-enea-v2', arch: 'torneo-enea-archivio', rub: 'torneo-enea-rubrica' };
+  const GROUPS_KEY = 'torneo-enea-gruppi';
+  const DEFAULT_GID = 'default';
+  const gkey = (base, gid) => gid === DEFAULT_GID ? base : base + ':' + gid;
+
+  function loadGroups() {
+    let g = null;
+    try { g = JSON.parse(localStorage.getItem(GROUPS_KEY) || 'null'); } catch (e) {}
+    if (!g || !Array.isArray(g.list) || !g.list.length) {
+      g = { cur: DEFAULT_GID, list: [{ id: DEFAULT_GID, name: 'Il mio gruppo' }] };
+      try { localStorage.setItem(GROUPS_KEY, JSON.stringify(g)); } catch (e) {}
+    }
+    g.list = g.list.filter(x => x && typeof x.id === 'string' && typeof x.name === 'string');
+    if (!g.list.length) g.list = [{ id: DEFAULT_GID, name: 'Il mio gruppo' }];
+    if (!g.list.some(x => x.id === g.cur)) g.cur = g.list[0].id;
+    return g;
+  }
+  let groups = loadGroups();
+  const saveGroups = () => { try { localStorage.setItem(GROUPS_KEY, JSON.stringify(groups)); } catch (e) {} };
+  const curGroup = () => groups.list.find(x => x.id === groups.cur);
+
+  const KEY = gkey(BASE.state, groups.cur);
+  const PTS = { win: 3, draw: 2, loss: 1 };
+  const WARN_MS = 60000; // avviso sonoro quando manca 1 minuto
+  const BONUS = 1;       // punti extra a chi gioca in inferiorità numerica
+  const ARCH_KEY = gkey(BASE.arch, groups.cur);
+  const ARCH_MAX = 50;
+  const RUB_KEY = gkey(BASE.rub, groups.cur);   // rubrica: elenco di tutti i nomi usati
+
+  const fresh = () => ({
+    v: 3,
+    step: 1,
+    returnStep: 1,
+    rawNames: '',
+    settings: { teamSize: '2', min: '5', sec: '0', warn: '1', comp: '1', bibOn: '1', bibs: 'arancione,blu,giallo,verde' },
+    players: [],            // [{id, name, joined, start}]  joined = turno di ingresso, start = punti iniziali
+    removed: [],            // giocatori tolti dalla lista: se tornano con lo stesso nome, recuperano i punti
+    nextId: 1,
+    teams: [],              // [[id,...], ...]  (a coppie: 0 vs 1, 2 vs 3...)
+    pending: [],            // [{a:bool, b:bool}] selezioni step 4
+    history: [],            // [{round, matches:[{t1,t2,r,bonus?}]}]  bonus = '1'|'2' squadra in inferiorità
+    adj: {},                // {id: correzione manuale}
+    closedId: null,         // id del torneo nello storico, se chiuso
+    timer: { status: 'idle', endTime: 0, remainingMs: 0, totalMs: 0 }
+  });
+
+  let state = load();
+  let tickId = null;
+  let wakeLock = null;
+  let audioCtx = null;
+  let dialogResolve = null;
+  let dialogHasInput = false;
+  let toastTimer = null;
+  let imgCache = null;      // {id, file} immagine della classifica finale già pronta
+  let rubrica = [];         // nomi della rubrica (MAIUSCOLO, ordinati)
+  let rubEdit = false;      // modalità "Gestisci rubrica"
+  let archCurrent = null;   // torneo aperto nello storico
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return fresh();
+      const s = JSON.parse(raw);
+      if (!s || (s.v !== 2 && s.v !== 3)) return fresh();
+      // Migrazione v2 → v3: nuovi campi opzionali
+      const st = Object.assign(fresh(), s, { v: 3 });
+      st.settings = Object.assign(fresh().settings, s.settings || {});
+      st.removed = Array.isArray(s.removed) ? s.removed : [];
+      st.players = (st.players || []).map(p => Object.assign({ joined: 1, start: 0 }, p));
+      return st;
+    } catch (e) { return fresh(); }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage pieno o bloccato */ }
+  }
+
+  function loadArchive() {
+    try { const a = JSON.parse(localStorage.getItem(ARCH_KEY) || '[]'); return Array.isArray(a) ? a : []; }
+    catch (e) { return []; }
+  }
+  function saveArchive(a) {
+    try { localStorage.setItem(ARCH_KEY, JSON.stringify(a.slice(0, ARCH_MAX))); } catch (e) {}
+  }
+  const fmtDate = (iso) => new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  /* =========================================================
+     UTILITY
+     ========================================================= */
+  const $ = (id) => document.getElementById(id);
+
+  // Crea elementi DOM in modo sicuro (nessun innerHTML con dati utente)
+  function h(tag, props = {}, ...kids) {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === 'class') e.className = v;
+      else if (k === 'text') e.textContent = v;
+      else if (k === 'style') e.style.cssText = v;
+      else e.setAttribute(k, v === true ? '' : v);
+    }
+    kids.flat().forEach(c => { if (c !== null && c !== undefined && c !== false) e.append(c); });
+    return e;
+  }
+
+  const nameOf = (id) => { const p = state.players.find(x => x.id === id); return p ? p.name : '?'; };
+  const teamLabel = (t) => t.filter(id => state.players.some(p => p.id === id)).map(nameOf).join(' + ');
+  const parseNames = (raw) => raw.toUpperCase().split(/[\n,]+/).map(n => n.replace(/\s+/g, ' ').trim()).filter(Boolean);
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // Dialog promise-based al posto di alert/confirm
+  // Con `input` (testo iniziale) il dialog mostra un campo e restituisce il testo, oppure false se annullato
+  function dialog({ title, message, ok = 'OK', cancel = 'ANNULLA', danger = false, input = null }) {
+    return new Promise(resolve => {
+      $('dlgTitle').textContent = title;
+      $('dlgMsg').textContent = message || '';
+      $('dlgMsg').style.display = message ? '' : 'none';
+      const okBtn = $('dlgOk'), cancelBtn = $('dlgCancel'), inp = $('dlgInput');
+      okBtn.textContent = ok;
+      okBtn.className = 'btn' + (danger ? ' red' : '');
+      cancelBtn.style.display = cancel ? '' : 'none';
+      if (cancel) cancelBtn.textContent = cancel;
+      dialogHasInput = input !== null;
+      inp.style.display = dialogHasInput ? 'block' : 'none';
+      if (dialogHasInput) inp.value = input;
+      dialogResolve = resolve;
+      $('dialog').classList.add('open');
+      if (dialogHasInput) setTimeout(() => { inp.focus(); inp.select(); }, 50);
+      else okBtn.focus();
+    });
+  }
+  function closeDialog(result) {
+    $('dialog').classList.remove('open');
+    if (dialogResolve) {
+      const r = dialogResolve; dialogResolve = null;
+      r(result && dialogHasInput ? $('dlgInput').value : result);
+    }
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /* =========================================================
+     AUDIO (fischio generato, nessun file esterno) E VIBRAZIONE
+     ========================================================= */
+  function unlockAudio() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { /* audio non disponibile */ }
+  }
+  function whistle() {
+    try { if (navigator.vibrate) navigator.vibrate([250, 100, 250]); } catch (e) {}
+    if (!audioCtx) return;
+    const blast = (start, len) => {
+      const t0 = audioCtx.currentTime + start;
+      const osc = audioCtx.createOscillator();
+      const lfo = audioCtx.createOscillator();
+      const lfoGain = audioCtx.createGain();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 2900;
+      lfo.frequency.value = 38;
+      lfoGain.gain.value = 140;
+      lfo.connect(lfoGain); lfoGain.connect(osc.frequency);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.5, t0 + 0.03);
+      gain.gain.setValueAtTime(0.5, t0 + len - 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t0); lfo.start(t0);
+      osc.stop(t0 + len + 0.05); lfo.stop(t0 + len + 0.05);
+    };
+    blast(0, 0.35);
+    blast(0.45, 0.6);
+  }
+
+  // Doppio "bip" breve per l'avviso a 1 minuto (diverso dal fischio)
+  function warnBeep() {
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+    if (!audioCtx) return;
+    [0, 0.25].forEach(start => {
+      const t0 = audioCtx.currentTime + start;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = 1100;
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.16);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + 0.2);
+    });
+  }
+
+  async function requestWake() {
+    try {
+      if ('wakeLock' in navigator && !wakeLock) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      }
+    } catch (e) { /* non supportato o negato */ }
+  }
+  function releaseWake() {
+    try { if (wakeLock) wakeLock.release(); } catch (e) {}
+    wakeLock = null;
+  }
+
+  /* =========================================================
+     NAVIGAZIONE
+     ========================================================= */
+  function showStep(n) {
+    state.step = n;
+    document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+    $('step-' + n).classList.add('active');
+    $('progressBar').style.width = (Math.min(n, 5) * 20) + '%';
+    $('btnSettings').style.visibility = n === 6 ? 'hidden' : '';
+    window.scrollTo(0, 0);
+    save();
+  }
+
+  const tournamentActive = () => state.history.length > 0 || state.teams.length > 0;
+
+  function refreshSetupButtons() {
+    const active = tournamentActive();
+    $('btnBack').style.display = active ? 'block' : 'none';
+    $('btnGenerate').textContent = active ? 'CREA NUOVE SQUADRE (FORZA PROSSIMO TURNO)' : 'CREA SQUADRE';
+    $('btnGenerate').style.fontSize = active ? '1rem' : '';
+  }
+
+  function openSettings() {
+    if (state.step !== 1) state.returnStep = state.step;
+    refreshSetupButtons();
+    updateSetupUI();
+    showStep(1);
+  }
+
+  /* =========================================================
+     STEP 1: CONFIGURAZIONE
+     ========================================================= */
+  function persistForm() {
+    state.rawNames = $('playerInput').value;
+    state.settings = {
+      teamSize: $('teamSize').value, min: $('timeMin').value, sec: $('timeSec').value,
+      warn: $('warnSound').checked ? '1' : '0', comp: $('compBonus').checked ? '1' : '0',
+      bibOn: $('bibOn').checked ? '1' : '0', bibs: state.settings.bibs
+    };
+    $('bibBox').style.display = state.settings.bibOn === '0' ? 'none' : '';
+    save();
+    updateSetupUI();
+  }
+
+  /* =========================================================
+     RUBRICA GIOCATORI
+     La lista di oggi resta il testo in #playerInput (fonte unica):
+     toccare un nome in rubrica lo aggiunge o lo toglie da quel testo.
+     ========================================================= */
+  const cleanName = (s) => String(s).toUpperCase().replace(/[\n,]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  function saveRubrica() {
+    rubrica = [...new Set(rubrica.map(cleanName).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'it'));
+    try { localStorage.setItem(RUB_KEY, JSON.stringify(rubrica)); } catch (e) {}
+  }
+
+  // Alla prima apertura la rubrica si riempie con i nomi già usati (torneo in corso e tornei passati)
+  function loadRubrica() {
+    try {
+      const a = JSON.parse(localStorage.getItem(RUB_KEY) || 'null');
+      if (Array.isArray(a)) { rubrica = a; return; }
+    } catch (e) {}
+    rubrica = [
+      ...state.players.map(p => p.name), ...state.removed.map(p => p.name), ...parseNames(state.rawNames || ''),
+      ...loadArchive().flatMap(e => e.ranking.map(r => r.name))
+    ];
+    saveRubrica();
+  }
+
+  function addToRubrica(names) {
+    const before = rubrica.length;
+    rubrica = rubrica.concat(names);
+    saveRubrica();
+    return rubrica.length !== before;
+  }
+
+  const todayNames = () => parseNames($('playerInput').value);
+  function setToday(names) {
+    $('playerInput').value = names.join('\n');
+    persistForm();
+  }
+
+  function renderRubrica() {
+    const box = $('rubChips');
+    const q = cleanName($('rubSearch').value);
+    const sel = new Set(todayNames());
+    // anche i nomi scritti a mano e non ancora in rubrica compaiono (selezionati)
+    const all = [...new Set([...rubrica, ...sel])].sort((a, b) => a.localeCompare(b, 'it'));
+    const list = q ? all.filter(n => n.includes(q)) : all;
+    box.replaceChildren(...list.map(n => h('button', {
+      class: 'rub-chip' + (rubEdit ? ' edit' : ''), 'data-act': 'rubToggle', 'data-n': n,
+      'aria-pressed': sel.has(n) ? 'true' : 'false',
+      'aria-label': rubEdit ? 'Elimina ' + n + ' dalla rubrica' : n, text: n
+    })));
+    if (!all.length) box.append(h('p', { class: 'rub-empty', text: 'La rubrica è vuota: scrivi un nome qui sopra e premi + AGGIUNGI.' }));
+    else if (!list.length) box.append(h('p', { class: 'rub-empty', text: `Nessun giocatore trovato: premi + AGGIUNGI per creare ${q}.` }));
+    const exact = q && all.includes(q);
+    const add = $('rubAdd');
+    add.textContent = exact ? (sel.has(q) ? '✓ C\'È GIÀ' : '✓ SELEZIONA') : '+ AGGIUNGI';
+    add.disabled = !q || (exact && sel.has(q));
+    $('rubEditBtn').setAttribute('aria-pressed', rubEdit ? 'true' : 'false');
+    $('rubEditBtn').textContent = rubEdit ? '✓ Fine modifica' : '✏️ Gestisci rubrica';
+  }
+
+  // Tocco su un nome: seleziona/deseleziona (oppure elimina, in modalità gestione)
+  async function rubToggle(name) {
+    if (rubEdit) {
+      if (todayNames().includes(name)) { toast(`Togli prima ${name} dai giocatori di oggi`); return; }
+      const ok = await dialog({ title: 'Elimina dalla rubrica', message: `${name} non comparirà più nell'elenco. I tornei passati restano invariati.`, ok: 'ELIMINA', danger: true });
+      if (!ok) return;
+      rubrica = rubrica.filter(n => n !== name);
+      saveRubrica();
+      renderRubrica();
+      return;
+    }
+    const names = todayNames();
+    setToday(names.includes(name) ? names.filter(n => n !== name) : names.concat(name));
+    const s = $('rubSearch');
+    if (s.value) { s.value = ''; renderRubrica(); s.focus(); }
+  }
+
+  // Campo cerca/aggiungi: se il nome esiste lo seleziona, altrimenti lo crea e lo seleziona
+  function rubAddFromSearch() {
+    const s = $('rubSearch');
+    const name = cleanName(s.value);
+    if (!name) return;
+    const created = addToRubrica([name]);
+    const names = todayNames();
+    if (!names.includes(name)) setToday(names.concat(name));
+    s.value = '';
+    renderRubrica();
+    s.focus();
+    toast(created ? `${name} aggiunto alla rubrica` : `${name} selezionato`);
+  }
+
+  async function rubNone() {
+    if (!todayNames().length) return;
+    const ok = await dialog({ title: 'Deseleziona tutti', message: 'Svuota l\'elenco dei giocatori di oggi. La rubrica resta com\'è.', ok: 'SVUOTA' });
+    if (ok) setToday([]);
+  }
+
+  /* =========================================================
+     PETTORINE: colore per ogni squadra del turno
+     ========================================================= */
+  const BIBS = {
+    arancione: { label: 'ARANCIONI', name: 'Arancione', color: '#ff8c1a' },
+    blu:       { label: 'BLU',       name: 'Blu',       color: '#1e6fff' },
+    giallo:    { label: 'GIALLI',    name: 'Giallo',    color: '#ffd400' },
+    verde:     { label: 'VERDI',     name: 'Verde',     color: '#22c55e' },
+    rosso:     { label: 'ROSSI',     name: 'Rosso',     color: '#ef233c' },
+    bianco:    { label: 'BIANCHI',   name: 'Bianco',    color: '#f5f5f5' },
+    nero:      { label: 'NERI',      name: 'Nero',      color: '#111111' },
+    viola:     { label: 'VIOLA',     name: 'Viola',     color: '#8b5cf6' },
+    senza:     { label: 'SENZA PETTORINA', name: 'Senza pettorina', color: null }
+  };
+  const BIB_ORDER = Object.keys(BIBS);
+  const bibList = () => String(state.settings.bibs || '').split(',').filter(k => BIBS[k]);
+
+  // Colore della squadra in posizione i del turno. Squadre consecutive (stessa partita)
+  // hanno sempre colori diversi; se i colori sono meno delle squadre si ripetono tra partite diverse.
+  function bibOf(i) {
+    if (state.settings.bibOn === '0') return null;
+    const l = bibList();
+    return l.length >= 2 ? BIBS[l[i % l.length]] : null;
+  }
+
+  function bibBadge(b) {
+    if (!b) return null;
+    return h('span', { class: 'bib', 'data-none': b.color ? null : '1' },
+      h('i', { class: 'bib-dot', style: b.color ? `--c:${b.color}` : null }), b.label);
+  }
+
+  // Nome della squadra per i messaggi: "ARANCIONI (ANNA + LUCA)" oppure solo i nomi
+  function teamName(i) {
+    const t = state.teams[i] || [], b = bibOf(i);
+    return b ? `${b.label} (${teamLabel(t)})` : teamLabel(t);
+  }
+
+  function renderBibChips() {
+    const sel = bibList();
+    $('bibChips').replaceChildren(...BIB_ORDER.map(k => {
+      const b = BIBS[k];
+      return h('button', { class: 'bib-chip', 'data-act': 'bib', 'data-k': k, 'aria-pressed': sel.includes(k) ? 'true' : 'false', 'data-none': b.color ? null : '1' },
+        h('i', { class: 'bib-dot', style: b.color ? `--c:${b.color}` : null }), b.name);
+    }));
+    $('bibBox').style.display = state.settings.bibOn === '0' ? 'none' : '';
+  }
+
+  function toggleBib(k) {
+    let l = bibList();
+    if (l.includes(k)) {
+      if (l.length <= 2) { toast('Servono almeno 2 colori'); return; }
+      l = l.filter(x => x !== k);
+    } else l.push(k);
+    state.settings.bibs = BIB_ORDER.filter(x => l.includes(x)).join(',');
+    save();
+    renderBibChips();
+  }
+
+  function findDuplicates(names) {
+    const seen = new Set(), dup = new Set();
+    names.forEach(n => { if (seen.has(n)) dup.add(n); seen.add(n); });
+    return [...dup];
+  }
+
+  function updateSetupUI() {
+    const names = parseNames($('playerInput').value);
+    $('playerCount').textContent = names.length;
+    const dups = findDuplicates(names);
+    const box = $('dupAlert'), btn = $('btnGenerate'), back = $('btnBack');
+    if (dups.length) {
+      box.style.display = 'block';
+      box.textContent = '⚠️ ATTENZIONE: ' + dups.join(', ') + ' è inserito più volte. Aggiungi il cognome per distinguerli.';
+      btn.disabled = true; back.disabled = true;
+      btn.textContent = 'CORREGGI I NOMI';
+    } else {
+      box.style.display = 'none';
+      btn.disabled = false; back.disabled = false;
+      refreshSetupButtons();
+    }
+    $('btnArchive').style.display = loadArchive().length ? 'block' : 'none';
+    renderRubrica();
+  }
+
+  // Legge e valida le impostazioni; ritorna null (con messaggio) se non valide
+  function readSettings() {
+    const size = parseInt($('teamSize').value, 10);
+    const min = $('timeMin').value === '' ? 0 : parseInt($('timeMin').value, 10);
+    const sec = $('timeSec').value === '' ? 0 : parseInt($('timeSec').value, 10);
+    if (!Number.isInteger(size) || size < 1 || size > 11) { toast('Giocatori per squadra: da 1 a 11'); return null; }
+    if (!Number.isInteger(min) || min < 0 || min > 180) { toast('Minuti: da 0 a 180'); return null; }
+    if (!Number.isInteger(sec) || sec < 0 || sec > 59) { toast('Secondi: da 0 a 59'); return null; }
+    if (min * 60 + sec <= 0) { toast('La durata della partita deve essere maggiore di zero'); return null; }
+    return { size, totalMs: (min * 60 + sec) * 1000 };
+  }
+
+  function averagePoints() {
+    const r = computeRanking();
+    return r.length ? Math.round(r.reduce((s, x) => s + x.pts, 0) / r.length) : 0;
+  }
+
+  // Allinea l'elenco giocatori al testo: mantiene gli id esistenti, recupera i giocatori tolti
+  // (con i loro punti) e crea i nuovi. A torneo iniziato chiede con quanti punti partono i nuovi.
+  async function syncPlayers() {
+    const names = parseNames($('playerInput').value);
+    if (names.length < 2) { toast('Inserisci almeno 2 giocatori'); return false; }
+    if (findDuplicates(names).length) { toast('Ci sono nomi duplicati'); return false; }
+    const byName = new Map([...state.removed, ...state.players].map(p => [p.name, p]));
+    const added = [];
+    const next = names.map(n => {
+      const p = byName.get(n);
+      if (p) return p;
+      const np = { id: state.nextId++, name: n, joined: state.history.length + 1, start: 0 };
+      added.push(np);
+      return np;
+    });
+    if (added.length && state.history.length) {
+      const avg = averagePoints();
+      const many = added.length > 1;
+      const start = await dialog({
+        title: many ? 'Nuovi giocatori' : 'Nuovo giocatore',
+        message: `${added.map(p => p.name).join(', ')} ${many ? 'entrano' : 'entra'} dal turno ${state.history.length + 1}.\nCon quanti punti ${many ? 'partono' : 'parte'}?`,
+        ok: `MEDIA (${avg} PT)`, cancel: 'DA 0'
+      });
+      if (start) added.forEach(p => { p.start = avg; });
+    }
+    const keep = new Set(next.map(p => p.id));
+    const gone = state.players.filter(p => !keep.has(p.id));
+    state.removed = state.removed.filter(p => !keep.has(p.id)).concat(gone);
+    state.players = next;
+    save();
+    addToRubrica(names);     // chi gioca entra sempre in rubrica
+    return true;
+  }
+
+  /* =========================================================
+     GENERAZIONE SQUADRE (evita compagni e composizioni ripetute)
+     ========================================================= */
+  const pairKey = (a, b) => a < b ? a + '-' + b : b + '-' + a;
+
+  function pairCounts() {
+    const map = new Map();
+    state.history.forEach(r => r.matches.forEach(m => [m.t1, m.t2].forEach(t => {
+      for (let i = 0; i < t.length; i++) for (let j = i + 1; j < t.length; j++) {
+        const k = pairKey(t[i], t[j]);
+        map.set(k, (map.get(k) || 0) + 1);
+      }
+    })));
+    return map;
+  }
+
+  const signature = (teams) => JSON.stringify(teams.map(t => t.slice().sort((a, b) => a - b).join('|')).sort());
+
+  function buildCandidate(ids, size) {
+    const pool = shuffle(ids), teams = [], ms = size * 2;
+    while (pool.length >= ms) { teams.push(pool.splice(0, size)); teams.push(pool.splice(0, size)); }
+    const k = pool.length;
+    if (k === 1) teams[teams.length - 1].push(pool[0]);
+    else if (k >= 2) { const half = Math.ceil(k / 2); teams.push(pool.slice(0, half)); teams.push(pool.slice(half)); }
+    return teams;
+  }
+
+  function pickTeams(size) {
+    const ids = state.players.map(p => p.id);
+    const counts = pairCounts();
+    const last = state.history.length ? state.history[state.history.length - 1] : null;
+    const lastSig = last ? signature(last.matches.flatMap(m => [m.t1, m.t2])) : null;
+    const curSig = state.teams.length ? signature(state.teams) : null;
+    let best = null, bestCost = Infinity;
+    for (let i = 0; i < 300; i++) {
+      const cand = buildCandidate(ids, size);
+      let cost = 0;
+      cand.forEach(t => {
+        for (let a = 0; a < t.length; a++) for (let b = a + 1; b < t.length; b++) {
+          const c = counts.get(pairKey(t[a], t[b])) || 0;
+          cost += c * c;
+        }
+      });
+      const sig = signature(cand);
+      if (sig === lastSig) cost += 1000;
+      if (sig === curSig) cost += 1000;
+      if (cost < bestCost) { best = cand; bestCost = cost; if (cost === 0) break; }
+    }
+    return best;
+  }
+
+  async function stopRunningMatchIfNeeded() {
+    const st = state.timer.status;
+    if (st === 'running' || st === 'paused') {
+      const ok = await dialog({ title: 'Partita in corso', message: 'C\'è una partita non ancora conclusa. Se crei nuove squadre verrà annullata.', ok: 'CREA SQUADRE', danger: true });
+      if (!ok) return false;
+    }
+    stopTick(); releaseWake();
+    state.timer = { status: 'idle', endTime: 0, remainingMs: 0, totalMs: 0 };
+    return true;
+  }
+
+  async function generateTeams() {
+    const cfg = readSettings();
+    if (!cfg) return;
+    if (!(await syncPlayers())) return;
+    if (!(await stopRunningMatchIfNeeded())) return;
+    state.teams = pickTeams(cfg.size);
+    state.pending = [];
+    state.returnStep = 2;
+    renderPreview();
+    showStep(2);
+  }
+
+  async function reroll() {
+    const cfg = readSettings();
+    if (!cfg) return;
+    state.teams = pickTeams(cfg.size);
+    renderPreview();
+    save();
+  }
+
+  // Quale squadra prende il bonus inferiorità: '1', '2' o null
+  const compOn = () => state.settings.comp !== '0';
+  function matchBonus(t1, t2) {
+    if (!compOn() || !t1 || !t2 || t1.length === t2.length) return null;
+    return t1.length < t2.length ? '1' : '2';
+  }
+
+  function renderPreview() {
+    const box = $('matchesList');
+    box.replaceChildren();
+    let uneven = false;
+    for (let i = 0; i < state.teams.length; i += 2) {
+      const t1 = state.teams[i], t2 = state.teams[i + 1];
+      const diff = t2 && t1.length !== t2.length;
+      if (diff) uneven = true;
+      const bon = matchBonus(t1, t2);
+      const b1 = bibOf(i), b2 = bibOf(i + 1);
+      box.append(h('div', { class: 'match', style: b1 && b1.color ? `border-left-color:${b1.color}` : null },
+        b1 ? h('div', {}, bibBadge(b1)) : null,
+        h('div', { class: 'a', text: teamLabel(t1) }),
+        h('span', { class: 'vs', text: 'VS' }),
+        b2 ? h('div', {}, bibBadge(b2)) : null,
+        h('div', { class: b2 ? 'a' : 'b', text: teamLabel(t2 || []) }),
+        diff ? h('small', { text: `⚠️ ${t1.length} contro ${t2.length}` + (bon ? ` · +${BONUS} pt a chi è in ${Math.min(t1.length, t2.length)}` : '') }) : null
+      ));
+    }
+    const nb = bibList().length;
+    if (bibOf(0) && state.teams.length > nb) {
+      box.append(h('p', { class: 'hint', text: `Hai ${nb} colori per ${state.teams.length} squadre: i colori si ripetono, ma mai nella stessa partita.` }));
+    }
+    const warn = $('previewWarn');
+    if (uneven) {
+      warn.style.display = 'block';
+      warn.textContent = 'Il numero di giocatori non è divisibile: alcune squadre sono più piccole. '
+        + (compOn() ? `Chi gioca in inferiorità prende ${BONUS} punto in più.` : 'Puoi rimescolare o cambiare la lista.');
+    } else warn.style.display = 'none';
+  }
+
+  /* =========================================================
+     STEP 3: TIMER
+     ========================================================= */
+  async function startMatch() {
+    const cfg = readSettings();
+    if (!cfg) return;
+    if (!state.teams.length) { toast('Crea prima le squadre'); return; }
+    unlockAudio();
+    state.timer = { status: 'running', endTime: Date.now() + cfg.totalMs, remainingMs: cfg.totalMs, totalMs: cfg.totalMs, warned: cfg.totalMs <= WARN_MS };
+    save();
+    whistle();
+    requestWake();
+    renderTimerUI();
+    renderLiveMatches();
+    startTick();
+    showStep(3);
+  }
+
+  // Chi gioca contro chi, sotto il timer (con i colori delle pettorine)
+  function renderLiveMatches() {
+    const box = $('liveMatches');
+    box.replaceChildren();
+    for (let i = 0; i + 1 < state.teams.length; i += 2) {
+      const side = (k) => h('div', {}, bibBadge(bibOf(k)), h('div', { class: 'live-names', text: teamLabel(state.teams[k]) }));
+      box.append(h('div', { class: 'live-match' }, side(i), h('span', { class: 'vs', text: 'VS' }), side(i + 1)));
+    }
+  }
+
+  function startTick() { stopTick(); tickId = setInterval(tick, 250); }
+  function stopTick() { if (tickId) { clearInterval(tickId); tickId = null; } }
+
+  function tick() {
+    const t = state.timer;
+    if (t.status !== 'running') return;
+    const left = t.endTime - Date.now();
+    if (left <= 0) { matchEnded(); return; }
+    if (!t.warned && left <= WARN_MS) {
+      t.warned = true;
+      save();
+      if (state.settings.warn !== '0') { warnBeep(); toast('⏱️ Manca 1 minuto'); }
+    }
+    renderTimerUI();
+  }
+
+  // Tempo extra: funziona in corsa, in pausa e anche a partita già finita (la riapre)
+  function addTime(ms) {
+    const t = state.timer;
+    if (!(ms > 0)) return;
+    if (t.status === 'running') t.endTime += ms;
+    else if (t.status === 'paused') t.remainingMs += ms;
+    else if (t.status === 'ended') {
+      t.status = 'running';
+      t.endTime = Date.now() + ms;
+      t.remainingMs = ms;
+      startTick();
+      requestWake();
+    } else return;
+    t.totalMs = (t.totalMs || 0) + ms;
+    const left = t.status === 'running' ? t.endTime - Date.now() : t.remainingMs;
+    t.warned = left <= WARN_MS;   // se torna sopra 1 minuto, l'avviso si riarma
+    save();
+    renderTimerUI();
+    const label = ms >= 60000 ? (ms / 60000) + ' min' : (ms / 1000) + ' sec';
+    toast('+' + label + ' di tempo extra');
+  }
+
+  function togglePause() {
+    const t = state.timer;
+    if (t.status === 'running') {
+      t.remainingMs = Math.max(0, t.endTime - Date.now());
+      t.status = 'paused';
+      stopTick();
+    } else if (t.status === 'paused') {
+      t.endTime = Date.now() + t.remainingMs;
+      t.status = 'running';
+      startTick();
+      requestWake();
+    }
+    save();
+    renderTimerUI();
+  }
+
+  function matchEnded() {
+    stopTick();
+    state.timer.status = 'ended';
+    state.timer.remainingMs = 0;
+    save();
+    whistle();
+    releaseWake();
+    renderTimerUI();
+  }
+
+  function renderTimerUI() {
+    const t = state.timer, disp = $('timerDisplay');
+    let ms = t.totalMs;
+    if (t.status === 'running') ms = Math.max(0, t.endTime - Date.now());
+    else if (t.status === 'paused') ms = t.remainingMs;
+    else if (t.status === 'ended') ms = 0;
+    const total = Math.ceil(ms / 1000);
+    disp.textContent = String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+    disp.classList.toggle('paused', t.status === 'paused');
+    disp.classList.toggle('pulse', t.status === 'running' && ms < 10000);
+    const pb = $('btnPause');
+    pb.textContent = t.status === 'paused' ? 'RIPRENDI ▶' : 'PAUSA ||';
+    pb.disabled = t.status === 'ended' || t.status === 'idle';
+    document.querySelectorAll('.extra').forEach(b => { b.disabled = t.status === 'idle'; });
+    const eb = $('btnEnd');
+    if (t.status === 'ended' || t.status === 'idle') { eb.textContent = 'VAI AI RISULTATI >>'; eb.className = 'btn push'; }
+    else { eb.textContent = 'FISCHIO FINALE (CHIUDI ORA)'; eb.className = 'btn red push'; }
+  }
+
+  async function finishMatch() {
+    const st = state.timer.status;
+    if (st === 'running' || st === 'paused') {
+      const ok = await dialog({ title: 'Fischio finale', message: 'Vuoi chiudere la partita in anticipo?', ok: 'CHIUDI ORA' });
+      if (!ok) return;
+      matchEnded();
+    }
+    goScores();
+  }
+
+  /* =========================================================
+     CLASSIFICA (sempre calcolata dallo storico)
+     ========================================================= */
+  function computeRanking() {
+    const s = new Map(state.players.map(p => [p.id, {
+      id: p.id, name: p.name, start: p.start || 0, joined: p.joined || 1,
+      pts: (p.start || 0) + (state.adj[p.id] || 0), w: 0, d: 0, l: 0, g: 0, b: 0
+    }]));
+    const give = (ids, pts, key) => ids.forEach(id => { const r = s.get(id); if (r) { r.pts += pts; r[key]++; r.g++; } });
+    state.history.forEach(round => round.matches.forEach(m => {
+      if (m.r === '1') { give(m.t1, PTS.win, 'w'); give(m.t2, PTS.loss, 'l'); }
+      else if (m.r === '2') { give(m.t1, PTS.loss, 'l'); give(m.t2, PTS.win, 'w'); }
+      else { give(m.t1, PTS.draw, 'd'); give(m.t2, PTS.draw, 'd'); }
+      if (m.bonus) (m.bonus === '1' ? m.t1 : m.t2).forEach(id => { const r = s.get(id); if (r) { r.pts += BONUS; r.b++; } });
+    }));
+    const list = [...s.values()].sort((a, b) => b.pts - a.pts || b.w - a.w || a.name.localeCompare(b.name, 'it'));
+    list.forEach((r, i) => { r.pos = (i > 0 && list[i - 1].pts === r.pts && list[i - 1].w === r.w) ? list[i - 1].pos : i + 1; });
+    return list;
+  }
+
+  const medal = (pos) => pos === 1 ? ' 🥇' : pos === 2 ? ' 🥈' : pos === 3 ? ' 🥉' : '';
+
+  function statsText(r) {
+    let t = `G ${r.g} · V ${r.w} N ${r.d} S ${r.l}`;
+    if (r.b) t += ` · bonus ${r.b}`;
+    if (r.joined > 1) t += ` · dal turno ${r.joined}` + (r.start ? ` (+${r.start} iniziali)` : '');
+    return t;
+  }
+
+  function renderRanking() {
+    $('btnApplyAdj').style.display = 'none';
+    $('btnUndo').style.display = state.history.length ? '' : 'none';
+    $('btnClose').style.display = state.history.length ? '' : 'none';
+    const body = $('rankingTable').querySelector('tbody');
+    body.replaceChildren();
+    computeRanking().forEach(r => {
+      const name = h('td', {},
+        h('button', { class: 'name-btn', 'data-act': 'rename', 'data-id': r.id, 'aria-label': 'Rinomina ' + r.name },
+          r.name, h('span', { class: 'pen', 'aria-hidden': 'true', text: '✏️' })),
+        h('span', { class: 'stats', text: statsText(r) }));
+      const cell = h('td', {}, h('div', { class: 'score-cell' },
+        h('button', { class: 'adj minus', 'data-act': 'adj', 'data-id': r.id, 'data-d': -1, 'aria-label': 'Togli un punto a ' + r.name, text: '−' }),
+        h('b', { id: 'pt-' + r.id, text: r.pts }),
+        h('button', { class: 'adj plus', 'data-act': 'adj', 'data-id': r.id, 'data-d': 1, 'aria-label': 'Aggiungi un punto a ' + r.name, text: '+' })
+      ));
+      body.append(h('tr', { class: r.pos === 1 ? 'first' : '' }, h('td', { text: r.pos + medal(r.pos) }), name, cell));
+    });
+  }
+
+  function adjustPoints(id, d) {
+    const cur = state.adj[id] || 0;
+    state.adj[id] = cur + d;
+    save();
+    const row = computeRanking().find(r => r.id === id);
+    const el = $('pt-' + id);
+    if (row && el) el.textContent = row.pts;
+    $('btnApplyAdj').style.display = 'block';
+  }
+
+  // full = vista "Mostra classifica" dalla schermata classifica (con Concludi torneo);
+  // altrimenti classifica parziale durante la partita
+  function showLiveRanking(full = false) {
+    $('liveTitle').textContent = full ? 'CLASSIFICA' : 'CLASSIFICA PARZIALE';
+    $('liveConclude').style.display = full && state.history.length ? 'block' : 'none';
+    const body = $('liveTable').querySelector('tbody');
+    body.replaceChildren();
+    computeRanking().forEach(r => body.append(h('tr', {},
+      h('td', { style: 'color:#999', text: r.pos + medal(r.pos) }),
+      h('td', { text: r.name }),
+      h('td', { style: 'text-align:right;font-weight:700;color:var(--neon)', text: r.pts })
+    )));
+    $('liveModal').classList.add('open');
+  }
+  const closeLive = () => $('liveModal').classList.remove('open');
+
+  async function shareText(text) {
+    try {
+      if (navigator.share) { await navigator.share({ text }); return; }
+      await navigator.clipboard.writeText(text);
+      toast('Classifica copiata negli appunti');
+    } catch (e) { if (e && e.name !== 'AbortError') toast('Impossibile condividere'); }
+  }
+
+  // Rinomina: stesso id, quindi punti e partite restano
+  async function renamePlayer(id) {
+    const p = state.players.find(x => x.id === id);
+    if (!p) return;
+    const v = await dialog({ title: 'Rinomina giocatore', message: 'Punti e partite giocate restano invariati.', ok: 'RINOMINA', input: p.name });
+    if (v === false) return;
+    const name = String(v).toUpperCase().replace(/[\n,]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!name) { toast('Il nome non può essere vuoto'); return; }
+    if (name === p.name) return;
+    if (state.players.some(x => x.id !== id && x.name === name)) { toast(name + ' è già in lista'); return; }
+    state.removed = state.removed.filter(x => x.name !== name);
+    rubrica = rubrica.filter(n => n !== p.name).concat(name);
+    saveRubrica();
+    p.name = name;
+    state.rawNames = state.players.map(x => x.name).join('\n');
+    $('playerInput').value = state.rawNames;
+    save();
+    updateSetupUI();
+    renderRanking();
+    toast('Rinominato in ' + name);
+  }
+
+  /* =========================================================
+     STEP 4: RISULTATI
+     ========================================================= */
+  function matchCount() { return Math.floor(state.teams.length / 2); }
+
+  function goScores() {
+    const n = matchCount();
+    if (state.pending.length !== n) state.pending = Array.from({ length: n }, () => ({ a: false, b: false }));
+    buildScoreUI();
+    showStep(4);
+  }
+
+  function buildScoreUI() {
+    const box = $('scoringList');
+    box.replaceChildren();
+    for (let m = 0; m < matchCount(); m++) {
+      const t1 = state.teams[m * 2], t2 = state.teams[m * 2 + 1];
+      const names = (t) => t.filter(id => state.players.some(p => p.id === id)).map(id => h('div', { text: nameOf(id) }));
+      const top = (b) => !b ? null : b.color ? `border-top:6px solid ${b.color}` : 'border-top:6px dashed #888';
+      const b1 = bibOf(m * 2), b2 = bibOf(m * 2 + 1);
+      box.append(h('div', { class: 'score-row' },
+        h('button', { class: 'team-btn', id: `m${m}a`, 'data-act': 'pick', 'data-m': m, 'data-side': 'a', style: top(b1) },
+          bibBadge(b1), h('div', { class: 'team-names' }, names(t1)), h('div', { class: 'result-label', id: `l${m}a` })),
+        h('div', { class: 'vs-mid', text: 'VS' }),
+        h('button', { class: 'team-btn', id: `m${m}b`, 'data-act': 'pick', 'data-m': m, 'data-side': 'b', style: top(b2) },
+          bibBadge(b2), h('div', { class: 'team-names' }, names(t2)), h('div', { class: 'result-label', id: `l${m}b` }))
+      ));
+      updateScoreLabels(m);
+    }
+  }
+
+  function updateScoreLabels(m) {
+    const p = state.pending[m] || { a: false, b: false };
+    const bon = matchBonus(state.teams[m * 2], state.teams[m * 2 + 1]);
+    const extra = (side) => bon === (side === 'a' ? '1' : '2') ? ` +${BONUS}` : '';
+    const kinds = { W: ['VITTORIA', PTS.win, 'var(--neon)'], D: ['PAREGGIO', PTS.draw, '#fff'], L: ['SCONFITTA', PTS.loss, '#888'] };
+    const set = (side, kind) => {
+      $(`m${m}${side}`).classList.toggle('selected', p[side]);
+      const l = $(`l${m}${side}`);
+      if (!kind) {
+        l.textContent = 'SELEZIONA ESITO' + (extra(side) ? ` (BONUS${extra(side)})` : '');
+        l.style.color = '#aaa';
+        return;
+      }
+      const [txt, pts, col] = kinds[kind];
+      l.textContent = `${txt} (${pts}${extra(side)} pt)`;
+      l.style.color = col;
+    };
+    if (p.a && p.b) { set('a', 'D'); set('b', 'D'); }
+    else if (p.a) { set('a', 'W'); set('b', 'L'); }
+    else if (p.b) { set('a', 'L'); set('b', 'W'); }
+    else { set('a', null); set('b', null); }
+  }
+
+  function pick(m, side) {
+    state.pending[m][side] = !state.pending[m][side];
+    updateScoreLabels(m);
+    save();
+  }
+
+  async function saveScores() {
+    const n = matchCount();
+    const matches = [], summary = [];
+    for (let m = 0; m < n; m++) {
+      const p = state.pending[m];
+      if (!p || (!p.a && !p.b)) { toast(`Seleziona l'esito della partita ${m + 1}`); return; }
+      const t1 = state.teams[m * 2], t2 = state.teams[m * 2 + 1];
+      const r = p.a && p.b ? 'D' : p.a ? '1' : '2';
+      const bonus = matchBonus(t1, t2);
+      const match = { t1: t1.slice(), t2: t2.slice(), r };
+      if (bonus) match.bonus = bonus;
+      matches.push(match);
+      const n1 = teamName(m * 2), n2 = teamName(m * 2 + 1);
+      const esito = r === 'D' ? 'pareggio' : 'vince ' + (r === '1' ? n1 : n2);
+      const bonusTxt = bonus ? `\n    +${BONUS} pt a ${bonus === '1' ? n1 : n2} (inferiorità)` : '';
+      summary.push(`${m + 1}) ${n1} vs ${n2}\n    → ${esito}${bonusTxt}`);
+    }
+    const ok = await dialog({ title: 'Conferma risultati', message: summary.join('\n'), ok: 'SALVA' });
+    if (!ok) return;
+    state.history.push({ round: state.history.length + 1, matches });
+    state.pending = [];
+    state.teams = [];
+    state.timer = { status: 'idle', endTime: 0, remainingMs: 0, totalMs: 0 };
+    state.returnStep = 5;
+    renderRanking();
+    showStep(5);
+  }
+
+  async function undoLastRound() {
+    if (!state.history.length) return;
+    const ok = await dialog({ title: 'Annulla ultimo turno', message: 'Il turno verrà tolto dalla classifica e potrai correggere i risultati.', ok: 'ANNULLA TURNO', danger: true });
+    if (!ok) return;
+    const last = state.history.pop();
+    state.teams = last.matches.flatMap(m => [m.t1, m.t2]);
+    state.pending = last.matches.map(m => ({ a: m.r === '1' || m.r === 'D', b: m.r === '2' || m.r === 'D' }));
+    buildScoreUI();
+    showStep(4);
+    toast('Turno annullato: correggi i risultati');
+  }
+
+  /* =========================================================
+     RESET E RITORNO AL TORNEO
+     ========================================================= */
+  async function resetAll() {
+    const ok = await dialog({ title: 'Azzera torneo', message: `Verranno cancellati i giocatori, i punti e i turni del torneo in corso di «${curGroup().name}». Rubrica e tornei passati restano. Non si può annullare.`, ok: 'AZZERA TUTTO', danger: true });
+    if (!ok) return;
+    stopTick(); releaseWake();
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    state = fresh();
+    fillForm();
+    updateSetupUI();
+    showStep(1);
+  }
+
+  /* =========================================================
+     GRUPPI E BACKUP
+     ========================================================= */
+  const readJSON = (k, def) => {
+    try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v === null ? def : v; } catch (e) { return def; }
+  };
+  const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+  const groupByName = (name) => groups.list.find(x => sameName(x.name, name));
+
+  function groupInfo(gid) {
+    const st = readJSON(gkey(BASE.state, gid), null);
+    const rub = readJSON(gkey(BASE.rub, gid), []);
+    const arch = readJSON(gkey(BASE.arch, gid), []);
+    const nArch = Array.isArray(arch) ? arch.length : 0;
+    const parts = [`${Array.isArray(rub) ? rub.length : 0} in rubrica`, nArch === 1 ? '1 torneo passato' : `${nArch} tornei passati`];
+    if (st && !st.closedId && ((st.history || []).length || (st.teams || []).length)) parts.push('torneo in corso');
+    return parts.join(' · ');
+  }
+
+  function renderGroupBar() { $('groupName').textContent = curGroup().name; }
+
+  function openGroups() { renderGroups(); $('groupModal').classList.add('open'); }
+  const closeGroups = () => $('groupModal').classList.remove('open');
+
+  function renderGroups() {
+    const body = $('groupBody');
+    body.replaceChildren(...[
+      h('p', { class: 'hint', text: 'Ogni gruppo ha la sua rubrica, le sue impostazioni, il suo torneo e i suoi tornei passati. Tocca un gruppo per usarlo.' }),
+      ...groups.list.map(g => h('button', { class: 'arch-item group-item' + (g.id === groups.cur ? ' cur' : ''), 'data-act': 'groupSwitch', 'data-id': g.id },
+        g.name, g.id === groups.cur ? h('span', { class: 'in-use', text: '✓ IN USO' }) : null,
+        h('small', { text: groupInfo(g.id) }))),
+      h('button', { class: 'btn blue', 'data-act': 'groupNew', text: '+ NUOVO GRUPPO' }),
+      h('div', { class: 'arch-actions' },
+        h('button', { class: 'small grey', 'data-act': 'groupRename', text: '✏️ Rinomina questo gruppo' }),
+        h('button', { class: 'small', 'data-act': 'groupDelete', text: '🗑 Elimina questo gruppo' })),
+      h('p', { class: 'group-sec', text: 'Backup' }),
+      h('p', { class: 'hint', text: 'I dati restano solo su questo telefono. Esporta un file per non perderli, per passare a un altro telefono o per dare un gruppo pronto a un collega.' }),
+      h('button', { class: 'btn ghost', 'data-act': 'exportCur', text: '📤 ESPORTA QUESTO GRUPPO' }),
+      groups.list.length > 1 ? h('button', { class: 'btn ghost', 'data-act': 'exportAll', text: '📤 ESPORTA TUTTI I GRUPPI' }) : null,
+      h('button', { class: 'btn ghost', 'data-act': 'importStart', text: '📥 IMPORTA UN BACKUP' })].filter(Boolean));
+  }
+
+  async function askGroupName(title, current, exceptId) {
+    const v = await dialog({ title, message: 'Per esempio: Under 15, Amici del giovedì.', ok: 'SALVA', input: current });
+    if (v === false) return null;
+    const name = String(v).replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!name) { toast('Il nome non può essere vuoto'); return null; }
+    const dup = groupByName(name);
+    if (dup && dup.id !== exceptId) { toast(`Esiste già il gruppo ${dup.name}`); return null; }
+    return name;
+  }
+
+  async function switchGroup(gid) {
+    if (gid === groups.cur || !groups.list.some(x => x.id === gid)) { closeGroups(); return; }
+    const st = state.timer.status;
+    if (st === 'running' || st === 'paused') {
+      const ok = await dialog({ title: 'Partita in corso', message: 'In questo gruppo c\'è una partita in corso. Il timer continua a contare: la ritrovi quando torni qui.', ok: 'CAMBIA GRUPPO' });
+      if (!ok) return;
+    }
+    save();
+    groups.cur = gid;
+    saveGroups();
+    location.reload();
+  }
+
+  async function newGroup() {
+    const name = await askGroupName('Nuovo gruppo', '', null);
+    if (!name) return;
+    const id = 'g' + Date.now().toString(36);
+    // il nuovo gruppo parte vuoto, con le stesse impostazioni di quello in uso
+    const st = fresh(); st.settings = Object.assign(fresh().settings, state.settings);
+    try { localStorage.setItem(gkey(BASE.state, id), JSON.stringify(st)); } catch (e) {}
+    groups.list.push({ id, name });
+    saveGroups();
+    toast(`Gruppo ${name} creato`);
+    switchGroup(id);
+  }
+
+  async function renameGroup() {
+    const g = curGroup();
+    const name = await askGroupName('Rinomina gruppo', g.name, g.id);
+    if (!name) return;
+    g.name = name;
+    saveGroups();
+    renderGroupBar();
+    renderGroups();
+  }
+
+  async function deleteGroup() {
+    if (groups.list.length < 2) { toast('Serve almeno un gruppo: creane un altro prima di eliminare questo'); return; }
+    const g = curGroup();
+    const ok = await dialog({
+      title: 'Elimina gruppo',
+      message: `Verranno cancellati rubrica, torneo in corso e tornei passati di «${g.name}» (${groupInfo(g.id)}). Non si può annullare.\n\nSe vuoi tenerli, prima esporta un backup.`,
+      ok: 'ELIMINA', danger: true
+    });
+    if (!ok) return;
+    stopTick(); releaseWake();
+    Object.values(BASE).forEach(b => { try { localStorage.removeItem(gkey(b, g.id)); } catch (e) {} });
+    groups.list = groups.list.filter(x => x.id !== g.id);
+    groups.cur = groups.list[0].id;
+    saveGroups();
+    location.reload();
+  }
+
+  function groupData(g) {
+    return {
+      name: g.name,
+      state: readJSON(gkey(BASE.state, g.id), null),
+      archive: readJSON(gkey(BASE.arch, g.id), []),
+      rubrica: readJSON(gkey(BASE.rub, g.id), [])
+    };
+  }
+
+  async function exportGroups(all) {
+    save();
+    const list = all ? groups.list : [curGroup()];
+    const data = { app: 'torneo-enea', format: 1, date: new Date().toISOString(), groups: list.map(groupData) };
+    const slug = all ? 'tutti-i-gruppi' : curGroup().name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'gruppo';
+    const name = `torneo-${slug}-${data.date.slice(0, 10)}.json`;
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    try {
+      const file = new File([blob], name, { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Backup Torneo Enea' });
+        return;
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    const url = URL.createObjectURL(blob);
+    const a = h('a', { href: url, download: name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast('Backup salvato: ' + name);
+  }
+
+  function validGroup(g) {
+    return g && typeof g.name === 'string' && g.name.trim() &&
+      (g.state === null || g.state === undefined || (typeof g.state === 'object' && Array.isArray(g.state.players))) &&
+      (g.archive === undefined || Array.isArray(g.archive)) && (g.rubrica === undefined || Array.isArray(g.rubrica));
+  }
+
+  async function importBackup(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { toast('File non valido'); return; }
+    if (!data || data.app !== 'torneo-enea' || !Array.isArray(data.groups)) { toast('Questo file non è un backup di Torneo Enea'); return; }
+    const list = data.groups.filter(validGroup);
+    if (!list.length) { toast('Il backup non contiene gruppi validi'); return; }
+    closeGroups();
+    let reload = false, count = 0;
+    for (const g of list) {
+      let name = g.name.replace(/\s+/g, ' ').trim().slice(0, 40);
+      let target = groupByName(name);
+      if (target) {
+        const replace = await dialog({
+          title: 'Gruppo già presente',
+          message: `«${target.name}» esiste già su questo telefono.\nVuoi sostituirlo con quello del backup oppure aggiungerlo come copia?`,
+          ok: 'SOSTITUISCI', cancel: 'AGGIUNGI COPIA', danger: true
+        });
+        if (!replace) {
+          let n = 2;
+          while (groupByName(`${name} (${n})`)) n++;
+          name = `${name} (${n})`;
+          target = null;
+        }
+      }
+      if (!target) { target = { id: 'g' + Date.now().toString(36) + count, name }; groups.list.push(target); }
+      if (target.id === groups.cur) { reload = true; stopTick(); releaseWake(); }
+      const put = (b, v) => { try { v === null || v === undefined ? localStorage.removeItem(gkey(b, target.id)) : localStorage.setItem(gkey(b, target.id), JSON.stringify(v)); } catch (e) {} };
+      put(BASE.state, g.state);
+      put(BASE.arch, g.archive || []);
+      put(BASE.rub, g.rubrica || null);
+      count++;
+    }
+    saveGroups();
+    if (reload) { location.reload(); return; }
+    toast(count === 1 ? 'Gruppo importato' : `${count} gruppi importati`);
+    openGroups();
+  }
+
+  async function backToTournament() {
+    if (!(await syncPlayers())) return;
+    const known = new Set(state.players.map(p => p.id));
+    const invalid = state.teams.some(t => t.some(id => !known.has(id)));
+    if (invalid) {
+      toast('Giocatori cambiati: creo nuove squadre');
+      return generateTeams();
+    }
+    if (state.step === 1) showStep(state.returnStep || 2);
+    if (state.returnStep === 5) renderRanking();
+  }
+
+  /* =========================================================
+     FINE TORNEO: podio, immagine da condividere, storico
+     ========================================================= */
+  const entryInfo = (e) => `${fmtDate(e.date)} · ${e.rounds} ${e.rounds === 1 ? 'turno' : 'turni'} · ${e.ranking.length} giocatori`;
+  const entryText = (e) => `🏆 Classifica finale Torneo Enea\n${entryInfo(e)}\n\n`
+    + e.ranking.map(r => `${r.pos}.${medal(r.pos)} ${r.name}: ${r.pts} pt${r.coin ? ' (🪙)' : ''}`).join('\n');
+  const currentEntry = () => loadArchive().find(e => e.id === state.closedId) || null;
+
+  async function closeTournament() {
+    const n = state.history.length;
+    if (!n) { toast('Gioca almeno un turno prima di concludere'); return; }
+    const ok = await dialog({
+      title: 'Concludi torneo',
+      message: `Il torneo finisce dopo ${n} ${n === 1 ? 'turno' : 'turni'}. La classifica finale viene salvata nello storico.`,
+      ok: 'CONCLUDI'
+    });
+    if (!ok) return;
+    const entry = {
+      id: Date.now(), date: new Date().toISOString(), rounds: n,
+      ranking: computeRanking().map(r => ({ pos: r.pos, name: r.name, pts: r.pts, w: r.w, d: r.d, l: r.l, g: r.g }))
+    };
+    const a = loadArchive(); a.unshift(entry); saveArchive(a);
+    stopTick(); releaseWake();
+    state.timer = { status: 'idle', endTime: 0, remainingMs: 0, totalMs: 0 };
+    state.teams = []; state.pending = [];
+    state.closedId = entry.id;
+    renderFinal(entry);
+    showStep(6);
+    whistle();
+    const ties = podiumTies(entry.ranking);
+    if (ties.length) {
+      const toss = await dialog({
+        title: 'Pari merito sul podio',
+        message: tieDescription(ties) + '\n\nVuoi decidere le posizioni con il lancio della moneta?',
+        ok: '🪙 LANCIA', cancel: 'DOPO'
+      });
+      if (toss) resolveTiesWithCoin();
+    }
+  }
+
+  /* =========================================================
+     SPAREGGIO CON MONETA VIRTUALE (solo pari merito sul podio)
+     ========================================================= */
+  // Gruppi di giocatori a pari merito che partono da una posizione del podio (1-3)
+  function podiumTies(ranking) {
+    const groups = new Map();
+    ranking.forEach(r => { if (r.pos <= 3) groups.set(r.pos, (groups.get(r.pos) || []).concat(r)); });
+    return [...groups.entries()].filter(([, rows]) => rows.length > 1)
+      .sort((a, b) => a[0] - b[0]).map(([pos, rows]) => ({ pos, rows }));
+  }
+  const tieDescription = (ties) => ties.map(g =>
+    `${g.rows.map(r => r.name).join(', ')} a pari merito al ${g.pos}° posto (${g.rows[0].pts} pt)`).join('\n');
+
+  // Numero casuale equo tra 0 e n-1
+  function rnd(n) {
+    try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
+    catch (e) { return Math.floor(Math.random() * n); }
+  }
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+  // Mostra un pulsante nella finestra della moneta e aspetta il tocco
+  function coinButton(label) {
+    return new Promise(resolve => {
+      const b = $('coinBtn');
+      b.textContent = label;
+      b.disabled = false;
+      b.onclick = () => { b.onclick = null; b.disabled = true; unlockAudio(); resolve(); };
+      b.focus();
+    });
+  }
+
+  function coinIntro(place, rows) {
+    $('coinTitle').textContent = `SPAREGGIO ${place}° POSTO`;
+    $('coinResult').textContent = '';
+    $('coinStage').replaceChildren();
+    const who = rows.map(r => r.name).join(rows.length === 2 ? ' e ' : ', ');
+    const pts = rows[0].pts;
+    return `${who} hanno ${pts} ${pts === 1 ? 'punto' : 'punti'}.`;
+  }
+
+  // Due giocatori: testa o croce. Ritorna l'indice di chi passa avanti
+  async function coinFlip(rows, place) {
+    const intro = coinIntro(place, rows);
+    $('coinInfo').textContent = `${intro}\nTESTA → ${rows[0].name}\nCROCE → ${rows[1].name}`;
+    const coin = h('div', { class: 'coin' },
+      h('div', { class: 'coin-face' }, 'TESTA', h('small', { text: rows[0].name })),
+      h('div', { class: 'coin-face coin-back' }, 'CROCE', h('small', { text: rows[1].name })));
+    $('coinStage').append(h('div', { class: 'coin-wrap' }, coin));
+    await coinButton('🪙 LANCIA LA MONETA');
+    const idx = rnd(2);
+    coin.style.transition = 'none';
+    coin.style.transform = 'rotateY(0deg)';
+    void coin.offsetWidth;               // forza il ridisegno prima dell'animazione
+    coin.style.transition = '';
+    coin.style.transform = `rotateY(${360 * 7 + (idx ? 180 : 0)}deg)`;
+    try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) {}
+    await sleep(2000);
+    $('coinResult').textContent = `Esce ${idx ? 'CROCE' : 'TESTA'}: ${rows[idx].name} è ${place}°!`;
+    warnBeep();
+    return idx;
+  }
+
+  // Tre o più giocatori: la moneta "gira" tra i nomi e si ferma su chi passa avanti
+  async function coinSpin(rows, place) {
+    const intro = coinIntro(place, rows);
+    $('coinInfo').textContent = `${intro}\nLa moneta gira tra i nomi: chi esce prende il ${place}° posto.`;
+    const chips = rows.map(r => h('div', { class: 'coin-chip', text: r.name }));
+    $('coinStage').append(h('div', { class: 'coin-chips' }, chips));
+    await coinButton('🪙 LANCIA LA MONETA');
+    const target = rnd(rows.length);
+    const steps = rows.length * 4 + target;   // qualche giro completo, poi si ferma sul sorteggiato
+    for (let i = 0; i <= steps; i++) {
+      chips.forEach((c, j) => c.classList.toggle('on', j === i % rows.length));
+      await sleep(60 + Math.pow(i / steps, 3) * 320);   // rallenta verso la fine
+    }
+    $('coinResult').textContent = `🪙 ${rows[target].name} è ${place}°!`;
+    warnBeep();
+    return target;
+  }
+
+  async function resolveTiesWithCoin() {
+    const entry = currentEntry();
+    if (!entry) return;
+    const ties = podiumTies(entry.ranking);
+    if (!ties.length) return;
+    $('coinModal').classList.add('open');
+    for (const g of ties) {
+      const remaining = g.rows.slice();
+      let place = g.pos;
+      // si lancia finché la posizione è sul podio e c'è ancora più di un giocatore da ordinare
+      while (remaining.length > 1 && place <= 3) {
+        const idx = remaining.length === 2 ? await coinFlip(remaining, place) : await coinSpin(remaining, place);
+        const winner = remaining.splice(idx, 1)[0];
+        winner.pos = place;
+        winner.coin = true;
+        place++;
+        await coinButton(remaining.length > 1 && place <= 3 ? 'AVANTI ›' : 'OK');
+      }
+      // chi resta: posizione successiva (eventualmente ancora a pari merito, fuori dal podio)
+      remaining.forEach(r => { r.pos = place; if (remaining.length === 1) r.coin = true; });
+    }
+    entry.ranking.sort((a, b) => a.pos - b.pos || b.pts - a.pts || a.name.localeCompare(b.name, 'it'));
+    saveArchive(loadArchive().map(e => e.id === entry.id ? entry : e));
+    imgCache = null;
+    $('coinModal').classList.remove('open');
+    renderFinal(entry);
+    toast('Podio aggiornato');
+  }
+
+  function podiumEl(entry) {
+    const slot = (pos, cls, icon) => {
+      const rows = entry.ranking.filter(r => r.pos === pos);
+      if (!rows.length) return h('div', { class: 'pod-col empty ' + cls });
+      return h('div', { class: 'pod-col ' + cls },
+        h('div', { class: 'pod-names' }, rows.map(r => h('div', { text: r.name }))),
+        h('div', { class: 'pod-pts', text: rows[0].pts + ' pt' }),
+        h('div', { class: 'pod-block' }, h('span', { text: icon }), h('div', { text: pos })));
+    };
+    return h('div', { class: 'podium' }, slot(2, 'p2', '🥈'), slot(1, 'p1', '🥇'), slot(3, 'p3', '🥉'));
+  }
+
+  function finalTableEl(entry) {
+    return h('table', {},
+      h('thead', {}, h('tr', {}, h('th', { text: '#' }), h('th', { text: 'Giocatore' }), h('th', { style: 'text-align:right', text: 'PT' }))),
+      h('tbody', {}, entry.ranking.map(r => h('tr', { class: r.pos === 1 ? 'first' : '' },
+        h('td', { text: r.pos + medal(r.pos) }),
+        h('td', {}, r.name, h('span', { class: 'stats', text: `G ${r.g} · V ${r.w} N ${r.d} S ${r.l}` + (r.coin ? ' · 🪙 spareggio a moneta' : '') })),
+        h('td', { style: 'text-align:right;font-weight:700', text: r.pts })))));
+  }
+
+  function renderFinal(entry) {
+    $('finalInfo').textContent = entryInfo(entry);
+    const ties = podiumTies(entry.ranking);
+    $('tieBox').style.display = ties.length ? 'block' : 'none';
+    $('tieText').textContent = ties.length ? '⚖️ ' + tieDescription(ties) + '.' : '';
+    $('podium').replaceChildren(podiumEl(entry));
+    $('finalList').replaceChildren(finalTableEl(entry));
+    prepareImage(entry);   // pronta in anticipo: su iPhone la condivisione deve partire subito dal tocco
+  }
+
+  // Blocco del podio con solo gli angoli in alto arrotondati
+  function topRoundRect(x, X, Y, w, hh, r) {
+    x.beginPath();
+    x.moveTo(X, Y + hh); x.lineTo(X, Y + r); x.quadraticCurveTo(X, Y, X + r, Y);
+    x.lineTo(X + w - r, Y); x.quadraticCurveTo(X + w, Y, X + w, Y + r);
+    x.lineTo(X + w, Y + hh); x.closePath();
+  }
+
+  async function drawRankingImage(entry) {
+    try { await document.fonts.ready; } catch (e) {}
+    const W = 1080, HEAD = 220, POD_BASE = 690, ROW = 88, LIST_TOP = 740, BW = 260;
+    const H = LIST_TOP + entry.ranking.length * ROW + 100;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    const anton = (s) => `${s}px Anton, Impact, "Arial Narrow", sans-serif`;
+    const roboto = (s, b) => `${b ? '700 ' : ''}${s}px Roboto, Arial, sans-serif`;
+    const fit = (t, max) => {
+      if (x.measureText(t).width <= max) return t;
+      while (t.length > 1 && x.measureText(t + '…').width > max) t = t.slice(0, -1);
+      return t + '…';
+    };
+
+    // Sfondo e testata a strisce come il prato
+    x.fillStyle = '#050505'; x.fillRect(0, 0, W, H);
+    for (let i = 0; i * 44 < HEAD; i++) { x.fillStyle = i % 2 ? '#0c5c39' : '#0f6a42'; x.fillRect(0, i * 44, W, 44); }
+    x.fillStyle = '#39ff14'; x.fillRect(0, HEAD - 6, W, 6);
+    x.textAlign = 'center';
+    x.fillStyle = '#fff'; x.font = anton(92); x.fillText('TORNEO ENEA', W / 2, 120);
+    x.fillStyle = 'rgba(255,255,255,.85)'; x.font = roboto(34); x.fillText(fit(entryInfo(entry), W - 80), W / 2, 178);
+
+    // Podio
+    [
+      { pos: 2, cx: W / 2 - 300, hh: 190, top: '#e6e6e6', bot: '#a9a9a9' },
+      { pos: 1, cx: W / 2, hh: 260, top: '#f5d76e', bot: '#c9a227' },
+      { pos: 3, cx: W / 2 + 300, hh: 140, top: '#e0a060', bot: '#a8642a' }
+    ].forEach(col => {
+      const rows = entry.ranking.filter(r => r.pos === col.pos);
+      if (!rows.length) return;
+      const y0 = POD_BASE - col.hh;
+      const g = x.createLinearGradient(0, y0, 0, POD_BASE);
+      g.addColorStop(0, col.top); g.addColorStop(1, col.bot);
+      x.fillStyle = g; topRoundRect(x, col.cx - BW / 2, y0, BW, col.hh, 14); x.fill();
+      x.fillStyle = '#111'; x.font = anton(84); x.fillText(String(col.pos), col.cx, y0 + 100);
+      const lines = rows.slice(0, 3).map(r => r.name);
+      if (rows.length > 3) lines.push('+' + (rows.length - 3));
+      let y = y0 - 64 - (lines.length - 1) * 42;
+      x.fillStyle = '#fff'; x.font = roboto(36, true);
+      lines.forEach(t => { x.fillText(fit(t, BW + 30), col.cx, y); y += 42; });
+      x.fillStyle = '#39ff14'; x.font = roboto(30, true); x.fillText(rows[0].pts + ' pt', col.cx, y0 - 18);
+    });
+
+    // Classifica completa
+    entry.ranking.forEach((r, i) => {
+      const y = LIST_TOP + i * ROW;
+      x.fillStyle = i % 2 ? '#0d0d0d' : '#171717'; x.fillRect(40, y, W - 80, ROW - 8);
+      x.textAlign = 'center';
+      x.fillStyle = r.pos === 1 ? '#f5d76e' : r.pos === 2 ? '#d0d0d0' : r.pos === 3 ? '#e0a060' : '#888';
+      x.font = anton(40); x.fillText(String(r.pos), 100, y + 56);
+      x.textAlign = 'left';
+      x.fillStyle = '#fff'; x.font = roboto(34, true); x.fillText(fit(r.name, 580), 160, y + 40);
+      x.fillStyle = '#9a9a9a'; x.font = roboto(22); x.fillText(`G ${r.g} · V ${r.w} N ${r.d} S ${r.l}`, 160, y + 70);
+      x.textAlign = 'right';
+      x.fillStyle = '#39ff14'; x.font = anton(44); x.fillText(r.pts + ' pt', W - 70, y + 56);
+    });
+    x.textAlign = 'center'; x.fillStyle = '#555'; x.font = roboto(24); x.fillText('Torneo Enea', W / 2, H - 40);
+    return c;
+  }
+
+  async function prepareImage(entry) {
+    if (imgCache && imgCache.id === entry.id) return imgCache;
+    try {
+      const c = await drawRankingImage(entry);
+      const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+      if (!blob) return null;
+      const name = 'classifica-torneo-' + entry.date.slice(0, 10) + '.png';
+      imgCache = { id: entry.id, blob, name, file: new File([blob], name, { type: 'image/png' }) };
+      return imgCache;
+    } catch (e) { return null; }
+  }
+
+  async function shareImage(entry) {
+    if (!entry) return;
+    const img = (imgCache && imgCache.id === entry.id) ? imgCache : await prepareImage(entry);
+    if (!img) { toast('Impossibile creare l\'immagine'); return; }
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [img.file] })) {
+        await navigator.share({ files: [img.file], title: 'Classifica Torneo Enea' });
+        return;
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    // Ripiego: scarica il file
+    const url = URL.createObjectURL(img.blob);
+    const a = h('a', { href: url, download: img.name });
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast('Immagine salvata');
+  }
+
+  function newTournament(keepPlayers) {
+    const settings = Object.assign(fresh().settings, state.settings);
+    const names = keepPlayers ? state.players.map(p => p.name).join('\n') : '';
+    state = fresh();
+    state.settings = settings;
+    state.rawNames = names;
+    imgCache = null;
+    fillForm();
+    updateSetupUI();
+    showStep(1);
+    toast(keepPlayers ? 'Nuovo torneo con gli stessi giocatori' : 'Nuovo torneo pronto');
+  }
+
+  async function reopenTournament() {
+    const ok = await dialog({ title: 'Riapri torneo', message: 'Il torneo torna in corso e viene tolto dallo storico.', ok: 'RIAPRI' });
+    if (!ok) return;
+    saveArchive(loadArchive().filter(e => e.id !== state.closedId));
+    state.closedId = null;
+    state.returnStep = 5;
+    renderRanking();
+    showStep(5);
+  }
+
+  function openArchive() {
+    archCurrent = null;
+    renderArchive();
+    $('archModal').classList.add('open');
+  }
+  const closeArch = () => $('archModal').classList.remove('open');
+  const archEntry = () => loadArchive().find(e => e.id === archCurrent) || null;
+
+  function renderArchive() {
+    const body = $('archBody');
+    body.replaceChildren();
+    body.scrollTop = 0;
+    const list = loadArchive();
+    const e = archCurrent ? archEntry() : null;
+    if (e) {
+      $('archTitle').textContent = fmtDate(e.date).toUpperCase();
+      body.append(
+        h('p', { class: 'hint', text: entryInfo(e) }),
+        podiumEl(e),
+        finalTableEl(e),
+        h('div', { class: 'arch-actions' },
+          h('button', { class: 'small blue', 'data-act': 'archImg', text: '📷 Immagine' }),
+          h('button', { class: 'small blue', 'data-act': 'archText', text: '📤 Testo' })),
+        h('div', { class: 'arch-actions' },
+          h('button', { class: 'small grey', 'data-act': 'archBack', text: '← Elenco' }),
+          h('button', { class: 'small', 'data-act': 'archDelete', text: '🗑 Elimina' })));
+      prepareImage(e);
+      return;
+    }
+    archCurrent = null;
+    $('archTitle').textContent = 'TORNEI PASSATI';
+    if (!list.length) { body.append(h('p', { class: 'hint', text: 'Nessun torneo chiuso.' })); return; }
+    list.forEach(t => {
+      const winners = t.ranking.filter(r => r.pos === 1).map(r => r.name).join(', ');
+      body.append(h('button', { class: 'arch-item', 'data-act': 'archOpen', 'data-id': t.id },
+        fmtDate(t.date),
+        h('small', { text: `🥇 ${winners} · ${t.rounds} ${t.rounds === 1 ? 'turno' : 'turni'} · ${t.ranking.length} giocatori` })));
+    });
+  }
+
+  async function archDelete() {
+    const ok = await dialog({ title: 'Elimina torneo', message: 'Il torneo viene tolto dallo storico. Non si può annullare.', ok: 'ELIMINA', danger: true });
+    if (!ok) return;
+    saveArchive(loadArchive().filter(e => e.id !== archCurrent));
+    archCurrent = null;
+    renderArchive();
+    updateSetupUI();
+  }
+
+  /* =========================================================
+     EVENTI
+     ========================================================= */
+  const actions = {
+    openSettings, generate: generateTeams, reroll, startMatch, togglePause,
+    finishMatch, liveRanking: () => showLiveRanking(false), closeLive, saveScores,
+    nextRound: generateTeams, applyAdj: renderRanking,
+    showRanking: () => showLiveRanking(true),
+    concludeFromModal: () => { closeLive(); closeTournament(); },
+    coinToss: resolveTiesWithCoin,
+    bib: (el) => toggleBib(el.dataset.k),
+    openGroups, closeGroups,
+    groupSwitch: (el) => switchGroup(el.dataset.id),
+    groupNew: newGroup, groupRename: renameGroup, groupDelete: deleteGroup,
+    exportCur: () => exportGroups(false),
+    exportAll: () => exportGroups(true),
+    importStart: () => $('importFile').click(),
+    rubToggle: (el) => rubToggle(el.dataset.n),
+    rubAdd: rubAddFromSearch,
+    rubNone,
+    rubEdit: () => { rubEdit = !rubEdit; renderRubrica(); },
+    addTime: (el) => addTime(Number(el.dataset.ms)),
+    undo: undoLastRound, reset: resetAll, backToTournament,
+    pick: (el) => pick(Number(el.dataset.m), el.dataset.side),
+    adj: (el) => adjustPoints(Number(el.dataset.id), Number(el.dataset.d)),
+    rename: (el) => renamePlayer(Number(el.dataset.id)),
+    closeTournament,
+    shareImage: () => shareImage(currentEntry()),
+    shareFinalText: () => { const e = currentEntry(); if (e) shareText(entryText(e)); },
+    newSame: () => newTournament(true),
+    newEmpty: () => newTournament(false),
+    reopen: reopenTournament,
+    openArchive, closeArch,
+    archOpen: (el) => { archCurrent = Number(el.dataset.id); renderArchive(); },
+    archBack: () => { archCurrent = null; renderArchive(); },
+    archImg: () => shareImage(archEntry()),
+    archText: () => { const e = archEntry(); if (e) shareText(entryText(e)); },
+    archDelete
+  };
+
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-act]');
+    if (!t) {
+      // tocco sullo sfondo scuro: chiude le finestre (non il dialog di conferma)
+      if (e.target.classList && e.target.classList.contains('overlay') && e.target.id !== 'dialog' && e.target.id !== 'coinModal') e.target.classList.remove('open');
+      return;
+    }
+    unlockAudio();
+    const f = actions[t.dataset.act];
+    if (f) f(t, e);
+  });
+
+  $('dlgOk').addEventListener('click', () => closeDialog(true));
+  $('dlgCancel').addEventListener('click', () => closeDialog(false));
+  $('dlgInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); closeDialog(true); } });
+  $('importFile').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (f) importBackup(f);
+  });
+  $('rubSearch').addEventListener('input', renderRubrica);
+  $('rubSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); rubAddFromSearch(); } });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if ($('dialog').classList.contains('open')) closeDialog(false);
+    else { closeLive(); closeArch(); closeGroups(); }
+  });
+
+  ['playerInput', 'teamSize', 'timeMin', 'timeSec', 'warnSound', 'compBonus', 'bibOn'].forEach(id => $(id).addEventListener('input', persistForm));
+
+  // Ritorno in primo piano: ricalcola il timer e riprendi il wake lock
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (state.timer.status === 'running') { tick(); requestWake(); }
+  });
+
+  /* =========================================================
+     AVVIO: ripristina stato salvato
+     ========================================================= */
+  function fillForm() {
+    $('playerInput').value = state.rawNames || state.players.map(p => p.name).join('\n');
+    $('teamSize').value = state.settings.teamSize;
+    $('timeMin').value = state.settings.min;
+    $('timeSec').value = state.settings.sec;
+    $('warnSound').checked = state.settings.warn !== '0';
+    $('compBonus').checked = state.settings.comp !== '0';
+    $('bibOn').checked = state.settings.bibOn !== '0';
+    renderBibChips();
+  }
+
+  function init() {
+    renderGroupBar();
+    loadRubrica();
+    fillForm();
+    updateSetupUI();
+    if (state.closedId) {
+      const e = currentEntry();
+      if (e) { renderFinal(e); showStep(6); return; }
+      state.closedId = null;          // torneo eliminato dallo storico: torna alla classifica
+      state.step = state.history.length ? 5 : 1;
+    }
+    if (state.step === 6) state.step = state.history.length ? 5 : 1;
+    const n = state.step;
+    if (n === 2 && state.teams.length) renderPreview();
+    if (n === 3) {
+      if (state.timer.status === 'idle') state.step = 2;
+      else { renderTimerUI(); renderLiveMatches(); if (state.timer.status === 'running') { startTick(); requestWake(); tick(); } }
+    }
+    if (n === 4) { if (state.teams.length) buildScoreUI(); else state.step = 1; }
+    if (n === 5) renderRanking();
+    if ((n === 2 || n === 3) && !state.teams.length) state.step = 1;
+    if (state.step === 2) renderPreview();
+    showStep(state.step);
+  }
+
+  init();
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>
